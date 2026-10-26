@@ -29,4 +29,7 @@ it has made, how many resumes a second the scheduler makes and what each costs b
 handoffs, from the scheduler's thread to the process's and back). With `MP_PROCESS_LOG` set it also prints each
 process's start and each overlay the game loads.
 
-MEASUREMENTS
+On the desktop, on a busy host, from the logos through Mario Land's greeting into the board Toad teaches the rules on,
+which four computer players play: the title screens keep up to 24 processes alive, and the board 19 to 21 (up to 24
+as a turn's screens come and go), with about 570 to 620 resumes a second. 39 threads are made in all. Each resume costs 11 to 23 us beyond the process, which is 7 to 13 ms a second, about 1% of a
+core. A board here keeps a few more processes alive than Mario Party's (15 to 18, about 450 resumes a second).
