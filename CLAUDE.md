@@ -52,8 +52,9 @@ This repo is the game: its recompilation, the patches over it, the desktop build
 - **The process scheduler.** Most of the game runs as the engine's processes, which switch with its own setjmp and
   longjmp; here each runs on a thread of its own, one at a time (`docs/processes.md`). The game has no other setjmp
   or longjmp, and `src/game/libultra.cpp`'s setjmp aborts.
-- **The game's threads.** The main thread (id 3) runs the scheduler once a frame; graphics (0x10), the controllers
-  (0x14) and audio (0x64, 0x65) have threads of their own.
+- **The game's threads.** The main thread (id 3) runs the scheduler once a frame; the RSP tasks (5), the VI and its
+  swaps (0x10), the cartridge's reads (0x14) and audio (0x64, 0x65) have threads of their own, and 0x11 to 0x13 are
+  more task and VI threads (`src/main/main.cpp` names them).
 - **No 64DD.** The game asks whether one is attached by reading the PI's and the drive's registers directly
   (`func_800989C0_995C0`, libleo's check); `patches/leo.c` answers no, as a console without one does. `us.toml` stubs
   the 64DD's boot of a disk game, and

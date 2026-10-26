@@ -15,10 +15,11 @@ process scheduler runs the same way, from the same file.
 The repo holds no ROM, no asset from the game and no data extracted from it: you supply your own ROM, and nothing in
 git or CI is made from one except the symbol names and addresses in `syms/`.
 
-**Status:** the first boot. The game's process scheduler, which switches between dozens of small processes with its
-own setjmp and longjmp, runs each process on a thread of its own, one at a time, on the desktop and in a browser alike
-([docs/processes.md](docs/processes.md)). Polish (interpolation to the display's rate, widescreen) is still to come.
-The game also plays in a browser, built from your ROM as a web page ([docs/web.md](docs/web.md)).
+**Status:** it boots and plays, from the logos through Mario Land into a board, on the desktop and in a browser. The
+game's process scheduler, which switches between dozens of small processes with its own setjmp and longjmp, runs each
+process on a thread of its own, one at a time ([docs/processes.md](docs/processes.md)). Polish (interpolation to the
+display's rate, widescreen) is still to come. The game plays in a browser too, built from your ROM as a web page
+([docs/web.md](docs/web.md)).
 
 ## The ROM
 

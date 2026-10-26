@@ -324,8 +324,8 @@ std::vector<recomp::GameEntry> supported_games = {
     },
 };
 
-// The game's threads (the decomp's src/1060.c, src/48D90.c, src/engine/graphics.c, src/engine/siman.c) and libultra's
-// managers.
+// The game's threads, named by what each one's function calls (the decomp has them in assembly), and libultra's
+// managers. Ids 0x11 to 0x13 are more task and VI threads the game makes, left as numbers.
 static std::string game_thread_name(const OSThread* t) {
     std::string name = "[Game] ";
 
@@ -354,12 +354,16 @@ static std::string game_thread_name(const OSThread* t) {
             name += "MAIN";
             break;
 
+        case 5:
+            name += "SCHED";
+            break;
+
         case 0x10:
-            name += "GFX";
+            name += "VI";
             break;
 
         case 0x14:
-            name += "SI";
+            name += "PI";
             break;
 
         case 0x64:
