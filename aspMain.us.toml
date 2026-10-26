@@ -2,17 +2,17 @@
 # the game sends need this microcode recompiled to run (src/main/main.cpp, get_rsp_microcode). tools/recompile.sh
 # writes it into RecompiledFuncs/.
 #
-# - The text is the last 0xE20 bytes of the microcode text the decomp keeps as data at ROM 0xB2360 (marioparty2.yaml),
-#   which ends at 0xB9550: rspboot, the graphics microcodes, then aspMain. Its first instructions read the task's
-#   ucode_data (lw from DMEM 0x30 and 0x34).
+# - The text is the last 0xE20 bytes of the microcode text in main's data (marioparty2.yaml's data from ROM 0xB9190),
+#   which ends at 0xC0380: rspboot, the graphics microcodes, then aspMain. It is Mario Party's aspMain byte for byte.
+#   Its first instructions read the task's ucode_data (lw from DMEM 0x30 and 0x34).
 # - text_address is the IMEM address its first byte runs at, 0x04001080, as Bomberman 64's recomp has the same
-#   microcode (another Hudson game on the same libultra): the command table in its data (ROM 0xCA7B0, the decomp's
+#   microcode (another Hudson game on the same libultra): the command table in its data (ROM 0xD2080, the decomp's
 #   rodata there) is that recomp's byte for byte.
 # - The command handlers are reached through that table, which RSPRecomp can't find by following the instructions, so
 #   they are listed below: the data's halfwords from offset 0x10.
 
 rom_file_path = "roms/marioparty2.us.z64"
-text_offset = 0xB8730
+text_offset = 0xBF560
 text_size = 0xE20
 text_address = 0x04001080
 

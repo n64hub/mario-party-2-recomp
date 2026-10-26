@@ -1,7 +1,7 @@
 # The web page
 
 The game plays in a browser: built with Emscripten on N64Recomp-browser's `frontend/` into
-`MarioPartyRecompiled.html` (the launcher, the recomp's menus, SDL2's audio and keyboard, the ROM from Load ROM, and
+`MarioParty2Recompiled.html` (the launcher, the recomp's menus, SDL2's audio and keyboard, the ROM from Load ROM, and
 the saves kept in IndexedDB; `lib/N64Recomp-browser/frontend/CMakeLists.txt`'s header says what each part does), drawn
 through WebGPU. The page is built from your ROM like the desktop program, so it is never built in CI and never
 published with the game in it.
@@ -17,13 +17,13 @@ threads and C++ exceptions anyway, so it needs no Asyncify.
 
 ## Build it
 
-On Linux with Docker, with the ROM at `roms/marioparty.us.z64`:
+On Linux with Docker, with the ROM at `roms/marioparty2.us.z64`:
 
 ```bash
 tools/build_web.sh                  # [cpus] [cmake arguments]
 ```
 
-It builds `build/web/MarioPartyRecompiled.html` with its `.js`, `.wasm` (about 17 MB) and `.data` (about 9 MB: the
+It builds `build/web/MarioParty2Recompiled.html` with its `.js`, `.wasm` (about 17 MB) and `.data` (about 9 MB: the
 recomp's fonts and menus, nothing of the game) in `tools/docker/Dockerfile.web`, the image every N64Recomp-browser page
 is built in, with ccache in `build/ccache-web`. The script's header says each step. The patches library (`patches/`,
 built for MIPS) is recompiled by the native N64Recomp that `tools/recompile.sh` builds, not the runtime's, which
@@ -33,7 +33,7 @@ The page has no prebuilt shader list yet, so RT64 builds each pipeline the first
 first minutes stutter as they come.
 
 Serve `build/web` over HTTP from localhost (any static server; the page brings its own `coi_serviceworker.js` for the
-headers threads need) and open `MarioPartyRecompiled.html` in Chrome or Firefox with WebGPU, then Load ROM.
+headers threads need) and open `MarioParty2Recompiled.html` in Chrome or Firefox with WebGPU, then Load ROM.
 
 ## The plan
 

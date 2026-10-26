@@ -1,14 +1,16 @@
-# Mario Party: Recompiled
+# Mario Party 2: Recompiled
 
 > **Made with AI.** Almost all of the code, documentation and tests in this repo were written by AI agents
 > (Claude), directed and play-tested by a person. None of it is offered to the upstream projects it builds on, which
 > don't take AI-written code.
 
-A native PC port of the N64 *Mario Party* (USA), made by static recompilation
+A native PC port of the N64 *Mario Party 2* (USA), made by static recompilation
 ([N64Recomp](https://github.com/N64Recomp/N64Recomp) + [N64ModernRuntime](https://github.com/N64Recomp/N64ModernRuntime) +
 [RT64](https://github.com/rt64/rt64), with [RecompFrontend](https://github.com/N64Recomp/RecompFrontend)'s launcher
 and menus): the game's own MIPS code translated to C and run natively, with RT64 drawing it. The symbols come from the
-[mariopartyrd/marioparty](https://github.com/mariopartyrd/marioparty) decompilation. It is not an emulator.
+[mariopartyrd/marioparty2](https://github.com/mariopartyrd/marioparty2) decompilation. It is not an emulator. It is built
+the way [Mario Party: Recompiled](https://github.com/n64hub/mario-party-recomp) is, on the same engine work: Hudson's
+process scheduler runs the same way, from the same file.
 
 The repo holds no ROM, no asset from the game and no data extracted from it: you supply your own ROM, and nothing in
 git or CI is made from one except the symbol names and addresses in `syms/`.
@@ -20,12 +22,12 @@ The game also plays in a browser, built from your ROM as a web page ([docs/web.m
 
 ## The ROM
 
-*Mario Party* (USA), as a big-endian `.z64` of 32 MiB with SHA-1 `1159bd56730094bfc71be30113e1cfc8bacf34f3`. Other
+*Mario Party 2* (USA), as a big-endian `.z64` of 32 MiB with SHA-1 `166eda1c05670d337e2c3f15a5db528ae1e5d6e3`. Other
 regions are not supported.
 
 ## Building
 
-You need that ROM at `roms/marioparty.us.z64`. On Windows: LLVM's clang-cl, CMake 3.31 and Ninja, and a clang with a
+You need that ROM at `roms/marioparty2.us.z64`. On Windows: LLVM's clang-cl, CMake 3.31 and Ninja, and a clang with a
 MIPS backend plus ld.lld for `patches/`. On Linux: `clang lld libsdl2-dev libgtk-3-dev libfreetype-dev`, CMake 3.31
 and Ninja.
 
@@ -37,15 +39,15 @@ bash tools/recompile.sh -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-c
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo \
       -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl \
       -DPATCHES_C_COMPILER=<MIPS clang> -DPATCHES_LD=<ld.lld>
-ninja -C build MarioPartyRecompiled
+ninja -C build MarioParty2Recompiled
 ```
 
 `tools/recompile.sh` builds N64Recomp from the submodule the first time, then translates the game. Run
-`build/MarioPartyRecompiled.exe` from the repo's root, pick the ROM with Load ROM, then Start Game.
+`build/MarioParty2Recompiled.exe` from the repo's root, pick the ROM with Load ROM, then Start Game.
 
 The symbols in `syms/` are made from the decomp's own build of the game (`tools/build_decomp.sh`, which needs the ROM
-and Docker, then `tools/gen_syms.sh`). They only change when `lib/marioparty` moves.
+and Docker, then `tools/gen_syms.sh`). They only change when `lib/marioparty2` moves.
 
 ## License
 
-GPL-3.0 (`LICENSE`), as the recompilations it follows. The decomp in `lib/marioparty` is its own project.
+GPL-3.0 (`LICENSE`), as the recompilations it follows. The decomp in `lib/marioparty2` is its own project.
