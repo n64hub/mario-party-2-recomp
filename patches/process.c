@@ -1,7 +1,8 @@
 #include "patches.h"
-#include "engine/process.h"
+#include "process.h"
+#include "game/malloc.h"
 
-// Hudson's process scheduler (src/engine/process.c) on native threads (src/game/process_threads.cpp says how). On a
+// Hudson's process scheduler (src/game/process.c) on native threads (src/game/process_threads.cpp says how). On a
 // console each process has a stack in its heap, and the scheduler and the processes switch with the game's setjmp and
 // longjmp: HuPrcCall longjmps into each process that is due, and a process setjmps where it sleeps and longjmps back.
 // Here the four functions that switch call the natives instead, and everything else is the game's as it was. The
@@ -13,8 +14,17 @@
 // killed before it ran, and one that was running checks for it when it wakes (prc_wait). It starts with the registers
 // its jmp_buf holds, as the longjmp into it loaded them: the game reads some before it sets them.
 
+// The decomp declares these in src/game/process.c itself.
+extern s16 processcnt;
+extern Process* processtop;
+extern Process* processcur;
+
+#define EXEC_PROCESS_DEFAULT 0
+#define EXEC_PROCESS_SLEEPING 1
+#define EXEC_PROCESS_WATCH 2
+#define EXEC_PROCESS_DEAD 3
+
 void HuUnlinkPrc(Process** root, Process* process);
-void HuPrcEnd(void);
 
 // The natives (src/game/process_threads.cpp).
 s32 recomp_prc_resume(Process* process, jmp_buf* jump);
@@ -79,7 +89,7 @@ RECOMP_PATCH void HuPrcCall(s32 time) {
     while (1) {
         switch (ret) {
             case 2:
-                HuMemDirectFree(processcur->heap);
+                HuMemMemoryFreePerm(processcur->heap);
                 processcur = processcur->next;
                 break;
             case 1:

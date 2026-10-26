@@ -8,6 +8,9 @@
 # table, so the ELF is used as it is linked. Into build/decomp/: marioparty2.elf. Nothing from it is committed but what
 # tools/gen_syms.sh writes from it.
 #
+# Its requirements.txt pins a branch of splat without splat's N64 extras (n64img, pygfxd, crunch64), which are installed
+# beside it, and its Makefile runs splat from the PATH, so the venv goes on it.
+#
 # Usage: [BUILD_HOST=<ssh host>] [DECOMP_DIR=<folder under ~, default marioparty2-decomp>] tools/build_decomp.sh [roms/marioparty2.us.z64]
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -36,7 +39,9 @@ run "[ -d $work/.git ] || git clone -q https://github.com/mariopartyrd/mariopart
 put "$rom" "$work/baserom.us.z64"
 run "docker run --rm --name marioparty2-decomp-${commit:0:12} -u \$(id -u):\$(id -g) -e HOME=/tmp -v \$HOME/$work:/mp -w /mp $image bash -c '
     set -e
-    [ -x venv/bin/python3 ] || { python3 -m venv venv && venv/bin/pip install -q -r requirements.txt; }
+    export PATH=/mp/venv/bin:\$PATH
+    [ -x venv/bin/python3 ] || python3 -m venv venv
+    venv/bin/python3 -c \"import n64img\" 2> /dev/null || venv/bin/pip install -q -r requirements.txt n64img pygfxd crunch64
     make setup > setup.log 2>&1 || { tail -30 setup.log; exit 1; }
     make -j\$(nproc) > build.log 2>&1 || { tail -30 build.log; exit 1; }
     tail -1 build.log | grep -qx OK || { echo \"the build does not match the ROM\"; tail -5 build.log; exit 1; }'"

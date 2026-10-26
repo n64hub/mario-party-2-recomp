@@ -1,6 +1,6 @@
 # N64Recomp's configuration for Mario Party 2 (USA), SHA-1 166eda1c05670d337e2c3f15a5db528ae1e5d6e3: it reads the game's
 # code out of the ROM by the symbols tools/gen_syms.sh dumps from the decomp's ELF, and writes RecompiledFuncs/
-# (tools/recompile.sh). The code is stored raw in the ROM: main after the boot code, and each of the 131 overlays
+# (tools/recompile.sh). The code is stored raw in the ROM: main after the boot code, and each of the 115 overlays
 # (minigames, boards, menus) where marioparty2.yaml has it, so there is nothing to decompress first.
 [input]
 # The decomp's entrypoint (asm/entrypoint.s), the ROM header's.
@@ -15,10 +15,11 @@ use_absolute_symbols = true
 # Functions recompiled as empty ones.
 stubs = [
     # libleo's boot of a 64DD disk game, which the game links in and reaches only with a 64DD attached, which the
-    # runtime never reports: it writes to its stack at an offset N64Recomp can't analyze.
+    # runtime never reports: the first writes to its stack at an offset N64Recomp can't analyze, the second sets
+    # cop0's TagLo to clear the caches.
     "__LeoBootGame2",
-]
-# Functions written as <name>_recomp: their names are a system library's too (PlaySound is Windows' winmm's).
-renamed = [
-    "PlaySound",
+    "__LeoBootGame3",
+    # The rest of libultra's exception handler after __osException (exceptasm.s: send_mesg, handle_CpU,
+    # __osEnqueueAndYield), which splat leaves unnamed: N64Recomp leaves the named parts out and the runtime has its own.
+    "func_8009D24C_9DE4C",
 ]

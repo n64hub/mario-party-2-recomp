@@ -310,9 +310,9 @@ gpr get_entrypoint_address();
 std::vector<recomp::GameEntry> supported_games = {
     {
         // XXH3 of Mario Party 2 (USA), SHA-1 166eda1c05670d337e2c3f15a5db528ae1e5d6e3. Its code is stored uncompressed.
-        .rom_hash = 0x19f905a0cbc9fe8fULL,
-        .internal_name = "MarioParty",
-        .display_name = "Mario Party",
+        .rom_hash = 0xd2dbfb3b4d7a5e81ULL,
+        .internal_name = "MarioParty2",
+        .display_name = "Mario Party 2",
         .game_id = u8"marioparty2.n64.us.1.0",
         .mod_game_id = "marioparty2",
         // 4 Kbit of EEPROM (the decomp's src/eeprom.c).
