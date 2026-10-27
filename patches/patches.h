@@ -16,6 +16,16 @@
 // libultra functions the runtime reimplements are called by their _recomp names (syms.ld).
 #define osRecvMesg osRecvMesg_recomp
 #define osEPiStartDma osEPiStartDma_recomp
+#define osSendMesg osSendMesg_recomp
+#define osJamMesg osJamMesg_recomp
+#define osCreateMesgQueue osCreateMesgQueue_recomp
+#define osCreateThread osCreateThread_recomp
+#define osStartThread osStartThread_recomp
+
+// libultra's gu functions the decomp leaves unnamed, by the names lib/mario-party-engine's patches call them.
+#define guMtxF2L func_800A4010_A4C10
+#define guMtxL2F func_800A40A8_A4CA8
+#define guOrtho func_800A43C0_A4FC0
 
 #include "common.h"
 
