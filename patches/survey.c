@@ -14,7 +14,9 @@
 // (the computer plays that player), set only when bit 31 is, and `minigame`, a minigame's ID (-1: leave it), which
 // GwSystem's chosenMinigameIndex takes: all three as a board sets them before it opens a minigame, by the minigame's
 // explanation screen (0x5F for IDs below 30, 0x60 for the others), which reads the ID to know which one it explains and
-// then goes to.
+// then goes to. `board` (-1: leave it) is GwSystem's current_board_index as a request is taken, 0 (Western Land) to 5
+// (Bowser Land), which a board's shared code reads for its own tables: set as the game leaves, not before, since the
+// overlay it leaves reads it too (Rules Land never leaves with another board's).
 //
 // `warps` counts the requests taken, and every frame the struct carries the overlay playing (the one omOvlGotoEx last
 // went to) and a count of the scheduler's frames (HuPrcCall, patches/process.c, calls survey_tick once a frame), which
@@ -40,9 +42,10 @@ struct Survey {
     volatile u32 groups;
     volatile u32 computers;
     volatile s32 minigame;
+    volatile s32 board;
 };
 
-struct Survey survey = { { 0x4D505254, 0x53525659 }, 0, -1, 0, 0, 0, 0, -1, 0, 0xFFFFFFFF, 0, -1 }; // "MPRT" "SRVY"
+struct Survey survey = { { 0x4D505254, 0x53525659 }, 0, -1, 0, 0, 0, 0, -1, 0, 0xFFFFFFFF, 0, -1, -1 }; // "MPRT" "SRVY"
 
 void survey_tick(void) {
     if (survey.frames == 0) {

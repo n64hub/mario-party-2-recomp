@@ -9,6 +9,8 @@
 // anywhere), or every time with `every` (a board, which the game goes to again after each minigame), with the players'
 // groups (four of GwPlayer's group, player 1's first; left out, they stay), those the computer plays (four booleans;
 // left out, they stay) and GwSystem's minigame ID (left out, it stays) set as it goes (patches/survey.c);
+// board(from, index), which goes to the board of that index (0 Western Land to 5 Bowser Land) every time the game
+// leaves for `from`, with GwSystem's board index set as it goes;
 // minigame(from, id, groups), which opens a minigame as a board does, by its explanation screen, with its groups and
 // four computer players: the game's debug menu's groups for each ID are [0, 1, 2, 3] for four players, [0, 1, 1, 1] for
 // 1 vs 3 and [0, 0, 1, 1] for 2 vs 2 and a duel; frames(), the scheduler's frame count (one a frame the game makes: its
@@ -31,7 +33,7 @@
     while (window.overlay() !== overlay && Date.now() < end) await sleep(100);
     return window.overlay() === overlay;
   };
-  window.ask = (from, overlay, event, stat, every, groups, computers, minigame) => {
+  window.ask = (from, overlay, event, stat, every, groups, computers, minigame, board) => {
     n64w(s + 12, from >>> 0);
     n64w(s + 16, overlay);
     n64w(s + 20, event >>> 0);
@@ -40,12 +42,16 @@
     const bits = computers ? computers.reduce((all, on, player) => all | (on ? 1 << player : 0), 0x80000000) : 0;
     n64w(s + 44, bits >>> 0);
     n64w(s + 48, minigame === undefined ? 0xffffffff : minigame);
+    n64w(s + 52, board === undefined ? 0xffffffff : board);
     n64w(s + 8, every ? 2 : 1);
     const when = every ? ' every time' : '';
     return `asked for ${hex(overlay)} in place of ${hex(from)}${when}, ${window.warps()} taken before`;
   };
   window.minigame = (from, id, groups) =>
     window.ask(from, id < 30 ? 0x5f : 0x60, 0, 0x94, false, groups, [true, true, true, true], id) + `, minigame ${hex(id)}`;
+  window.board = (from, index) =>
+    window.ask(from, [0x3e, 0x41, 0x43, 0x45, 0x47, 0x49][index], -1, -1, true, undefined, undefined, undefined, index) +
+    `, board ${index}`;
   window.mark = () => { window.__mark = [window.frames(), performance.now()]; return 'frames ' + window.__mark[0]; };
   window.rate = () => {
     const [frames, ms] = [window.frames() - window.__mark[0], performance.now() - window.__mark[1]];
