@@ -18,9 +18,11 @@ namespace {
     constexpr int WARPS = 0x1C;
     constexpr int GROUPS = 0x28;
     constexpr int COMPUTERS = 0x2C;
+    constexpr int MINIGAME = 0x30;
 
     // gPlayers (0x800FD2C0, 0x34 bytes a player): its group (a minigame's side) at 0 and its flags at 6, bit 0 of the
-    // low byte (7) the computer playing it; GwSystem's chosenMinigameIndex (0x800F93C8).
+    // low byte (7) the computer playing it (ovl_70_Results reads it so); GwSystem's chosenMinigameIndex (0x800F93C8), a
+    // minigame's ID, which the explanation screen turns into its overlay.
     constexpr gpr GW_PLAYER = (gpr)(int32_t)0x800FD2C0;
     constexpr int PLAYER_SIZE = 0x34;
     constexpr gpr MINIGAME_INDEX = (gpr)(int32_t)0x800F93C8;
@@ -68,6 +70,10 @@ extern "C" void mp_survey_goto(uint8_t* rdram, gpr* overlay, gpr* event, gpr* st
         if (computers & 0x80000000) {
             MEM_B(7, base) = (MEM_B(7, base) & ~1) | ((computers >> player) & 1);
         }
+    }
+    int32_t minigame = MEM_W(MINIGAME, survey_vram);
+    if (minigame != -1) {
+        MEM_H(0, MINIGAME_INDEX) = (int16_t)minigame;
     }
     if (MEM_W(REQUEST, survey_vram) == 1) {
         MEM_W(REQUEST, survey_vram) = 0;

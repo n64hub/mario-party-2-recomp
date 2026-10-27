@@ -10,8 +10,11 @@
 // (src/game/survey.cpp). A board takes 2: the game goes to the board again with each part of a game (its turns, back
 // from each minigame). So the game leaves the overlay it is in its own way, with what it frees and sets up as it does,
 // which a call of omOvlGotoEx from elsewhere skips. A request also carries `groups`, a byte a player from player 1's in
-// the top byte (GwPlayer's group, a minigame's sides; all ones: leave them), and `computers`, a bit a player from bit
-// 0 (the computer plays that player), set only when bit 31 is, as a board sets them before a minigame.
+// the top byte (GwPlayer's group, a minigame's sides; all ones: leave them), `computers`, a bit a player from bit 0
+// (the computer plays that player), set only when bit 31 is, and `minigame`, a minigame's ID (-1: leave it), which
+// GwSystem's chosenMinigameIndex takes: all three as a board sets them before it opens a minigame, by the minigame's
+// explanation screen (0x5F for IDs below 30, 0x60 for the others), which reads the ID to know which one it explains and
+// then goes to.
 //
 // `warps` counts the requests taken, and every frame the struct carries the overlay playing (the one omOvlGotoEx last
 // went to) and a count of the scheduler's frames (HuPrcCall, patches/process.c, calls survey_tick once a frame), which
@@ -36,9 +39,10 @@ struct Survey {
     volatile u32 frames;
     volatile u32 groups;
     volatile u32 computers;
+    volatile s32 minigame;
 };
 
-struct Survey survey = { { 0x4D505254, 0x53525659 }, 0, -1, 0, 0, 0, 0, -1, 0, 0xFFFFFFFF, 0 }; // "MPRT" "SRVY"
+struct Survey survey = { { 0x4D505254, 0x53525659 }, 0, -1, 0, 0, 0, 0, -1, 0, 0xFFFFFFFF, 0, -1 }; // "MPRT" "SRVY"
 
 void survey_tick(void) {
     if (survey.frames == 0) {
