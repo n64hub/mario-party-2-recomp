@@ -16,9 +16,9 @@ process scheduler runs the same way, from the code the Mario Party recomps share
 The repo holds no ROM, no asset from the game and no data extracted from it: you supply your own ROM, and nothing in
 git or CI is made from one except the symbol names and addresses in `syms/`.
 
-**Status:** plays its menus, its six boards and its minigames, on the desktop and in a browser, its boards
-interpolated to the display's rate (its menus and minigames, which the engine draws in several RSP tasks a frame,
-present the game's own 30) and drawn at the window's size and shape (RT64's Framerate Display, Resolution Auto and
+**Status:** plays its menus, its six boards and its minigames, on the desktop and in a browser, interpolated to the
+display's rate (its menus and minigames too, which the engine draws in several RSP tasks a frame) and drawn at the
+window's size and shape (RT64's Framerate Display, Resolution Auto and
 Aspect Ratio Expand, a board seen from afar and the minigames widened to the window's edges; a board's close view
 still draws in 4:3). The game's process scheduler, which switches between dozens of small processes with its own
 setjmp and longjmp, runs each process on a thread of its own, one at a time ([docs/processes.md](docs/processes.md)).
