@@ -3,23 +3,25 @@
  "header": [
   "The RT64 shaders the web page builds: one shader description a line, other mode L and H, color combiner L and H,",
   "flags, in hex. RT64 specializes each one's WGSL when the page is built and builds them with the game waiting: those",
-  "above the first \"section\" line before the game starts, and a section's when the game first draws with its shaders,",
-  "so that nothing draws with the ubershader, which integrated graphics can't afford (N64Recomp-browser's",
-  "docs/porting.md, Prebuilt shader lists).",
+  "above the first \"section\" line before the game starts, and a section's when the game first draws with its shaders, so",
+  "that nothing draws with the ubershader, which integrated graphics can't afford (N64Recomp-browser's docs/porting.md,",
+  "Prebuilt shader lists).",
   "Recorded by code, not by playing: bash tools/record_shaders.sh (its header says how) runs N64Recomp-browser's",
   "tools/record_shaders.mjs with tools/shader_plan.json, which loads the page fresh for each section. Section 0 is the",
   "launcher, the logos, the opening and the title with Start (Enter), and Mario Land on a new save. RulesBoard is A",
-  "(Space) through Toad's greeting, the warp pipe and Rules Land into the board Toad teaches the rules on, then 90 s of",
-  "A with four computer players on it. Then a section for each of the six boards, WesternLand to BowserLand, which the",
-  "survey (patches/survey.c, tools/survey.js) sends Rules Land's trip to the rules' board to, with GwSystem's board",
-  "index set as the game leaves for it, played by the computer for a whole",
-  "turn: its start, four players' moves, the minigame it picks by its explanation screen, the results and back. Then",
-  "the 66 minigames, the duels' six among them, six a section in their overlays' order: the survey takes the trip to",
-  "the rules' board to the first one's explanation screen (0x5F or 0x60) with its ID, the groups the game's debug menu",
-  "gives its kind (four players, 1 vs 3, 2 vs 2) and four computer players, as a board opens a minigame, and each one's",
-  "end to the next one's. A plays them to their ends. Not recorded: Mini-Game Land, the Mini-Game Coaster, a party's",
-  "setup, a board's ending and the options. Flags follow settings (filtering, HDR, MSAA, upscaling), so a change to",
-  "one of those defaults means recording again."
+  "(Space) through Toad's greeting, the warp pipe and Rules Land into the board Toad teaches the rules on, then 90 s of A",
+  "with four computer players on it. Then a section for each of the six boards, WesternLand to BowserLand, which the",
+  "survey (patches/survey.c, tools/survey.js) sends Rules Land's trip to the rules' board to, with GwSystem's board index",
+  "set as the game leaves for it, played by the computer for a whole turn: its start, four players' moves, the minigame",
+  "it picks by its explanation screen, the results and back. Then the 60 minigames, six a section in their overlays'",
+  "order: the survey takes the trip to the rules' board to the first one's explanation screen (0x5F or 0x60) with its ID,",
+  "the groups the game's debug menu gives its kind (four players, 1 vs 3, 2 vs 2) and four computer players, as a board",
+  "opens a minigame, each one's end to the next one's explanation, and the last one's to the minigame results (0x6F),",
+  "which go back to Rules Land: the board's results (0x70), where some minigames end, read a board the trip",
+  "never loaded. A plays them to their ends. Not recorded: the six duels, which pick among their board's spaces and so",
+  "play only from a board's own duel, Mini-Game Land, the Mini-Game Coaster, a party's setup, a board's ending and the",
+  "options. Flags follow settings (filtering, HDR, MSAA, upscaling), so a change to one of those defaults means recording",
+  "again."
  ],
  "load": [
   [
@@ -649,6 +651,10 @@
      "overlay() === 0x06"
     ],
     [
+     "eval",
+     "ask(-1, 0x6F, 0, 0x14, false) + ' (the results)'"
+    ],
+    [
      "pressUntil",
      "Space",
      " ",
@@ -844,6 +850,10 @@
     [
      "need",
      "overlay() === 0x0C"
+    ],
+    [
+     "eval",
+     "ask(-1, 0x6F, 0, 0x14, false) + ' (the results)'"
     ],
     [
      "pressUntil",
@@ -1043,6 +1053,10 @@
      "overlay() === 0x12"
     ],
     [
+     "eval",
+     "ask(-1, 0x6F, 0, 0x14, false) + ' (the results)'"
+    ],
+    [
      "pressUntil",
      "Space",
      " ",
@@ -1238,6 +1252,10 @@
     [
      "need",
      "overlay() === 0x18"
+    ],
+    [
+     "eval",
+     "ask(-1, 0x6F, 0, 0x14, false) + ' (the results)'"
     ],
     [
      "pressUntil",
@@ -1437,6 +1455,10 @@
      "overlay() === 0x1E"
     ],
     [
+     "eval",
+     "ask(-1, 0x6F, 0, 0x14, false) + ' (the results)'"
+    ],
+    [
      "pressUntil",
      "Space",
      " ",
@@ -1632,6 +1654,10 @@
     [
      "need",
      "overlay() === 0x24"
+    ],
+    [
+     "eval",
+     "ask(-1, 0x6F, 0, 0x14, false) + ' (the results)'"
     ],
     [
      "pressUntil",
@@ -1831,6 +1857,10 @@
      "overlay() === 0x2A"
     ],
     [
+     "eval",
+     "ask(-1, 0x6F, 0, 0x14, false) + ' (the results)'"
+    ],
+    [
      "pressUntil",
      "Space",
      " ",
@@ -2026,6 +2056,10 @@
     [
      "need",
      "overlay() === 0x30"
+    ],
+    [
+     "eval",
+     "ask(-1, 0x6F, 0, 0x14, false) + ' (the results)'"
     ],
     [
      "pressUntil",
@@ -2225,6 +2259,10 @@
      "overlay() === 0x36"
     ],
     [
+     "eval",
+     "ask(-1, 0x6F, 0, 0x14, false) + ' (the results)'"
+    ],
+    [
      "pressUntil",
      "Space",
      " ",
@@ -2422,6 +2460,10 @@
      "overlay() === 0x3C"
     ],
     [
+     "eval",
+     "ask(-1, 0x6F, 0, 0x14, false) + ' (the results)'"
+    ],
+    [
      "pressUntil",
      "Space",
      " ",
@@ -2434,203 +2476,6 @@
     [
      "eval",
      "'DeepSeaSalvage ended: ' + overlay().toString(16)"
-    ]
-   ]
-  },
-  {
-   "name": "Minigames3F",
-   "steps": [
-    [
-     "eval",
-     "minigame(0x4C, 0x3B, [0, 0, 1, 1]) + ' DesertDuel'"
-    ],
-    [
-     "pressUntil",
-     "Space",
-     " ",
-     32,
-     150,
-     1500,
-     "overlay() === 0x3F",
-     150000
-    ],
-    [
-     "need",
-     "overlay() === 0x3F"
-    ],
-    [
-     "eval",
-     "minigame(-1, 0x3C, [0, 0, 1, 1]) + ' PirateDuel'"
-    ],
-    [
-     "pressUntil",
-     "Space",
-     " ",
-     32,
-     150,
-     3000,
-     "overlay() !== 0x3F",
-     240000
-    ],
-    [
-     "eval",
-     "'DesertDuel ended: ' + overlay().toString(16)"
-    ],
-    [
-     "pressUntil",
-     "Space",
-     " ",
-     32,
-     150,
-     1500,
-     "overlay() === 0x42",
-     90000
-    ],
-    [
-     "need",
-     "overlay() === 0x42"
-    ],
-    [
-     "eval",
-     "minigame(-1, 0x3D, [0, 0, 1, 1]) + ' name'"
-    ],
-    [
-     "pressUntil",
-     "Space",
-     " ",
-     32,
-     150,
-     3000,
-     "overlay() !== 0x42",
-     240000
-    ],
-    [
-     "eval",
-     "'PirateDuel ended: ' + overlay().toString(16)"
-    ],
-    [
-     "pressUntil",
-     "Space",
-     " ",
-     32,
-     150,
-     1500,
-     "overlay() === 0x44",
-     90000
-    ],
-    [
-     "need",
-     "overlay() === 0x44"
-    ],
-    [
-     "eval",
-     "minigame(-1, 0x3E, [0, 0, 1, 1]) + ' name'"
-    ],
-    [
-     "pressUntil",
-     "Space",
-     " ",
-     32,
-     150,
-     3000,
-     "overlay() !== 0x44",
-     240000
-    ],
-    [
-     "eval",
-     "'name ended: ' + overlay().toString(16)"
-    ],
-    [
-     "pressUntil",
-     "Space",
-     " ",
-     32,
-     150,
-     1500,
-     "overlay() === 0x46",
-     90000
-    ],
-    [
-     "need",
-     "overlay() === 0x46"
-    ],
-    [
-     "eval",
-     "minigame(-1, 0x3F, [0, 0, 1, 1]) + ' name'"
-    ],
-    [
-     "pressUntil",
-     "Space",
-     " ",
-     32,
-     150,
-     3000,
-     "overlay() !== 0x46",
-     240000
-    ],
-    [
-     "eval",
-     "'name ended: ' + overlay().toString(16)"
-    ],
-    [
-     "pressUntil",
-     "Space",
-     " ",
-     32,
-     150,
-     1500,
-     "overlay() === 0x48",
-     90000
-    ],
-    [
-     "need",
-     "overlay() === 0x48"
-    ],
-    [
-     "eval",
-     "minigame(-1, 0x40, [0, 0, 1, 1]) + ' name'"
-    ],
-    [
-     "pressUntil",
-     "Space",
-     " ",
-     32,
-     150,
-     3000,
-     "overlay() !== 0x48",
-     240000
-    ],
-    [
-     "eval",
-     "'name ended: ' + overlay().toString(16)"
-    ],
-    [
-     "pressUntil",
-     "Space",
-     " ",
-     32,
-     150,
-     1500,
-     "overlay() === 0x4A",
-     90000
-    ],
-    [
-     "need",
-     "overlay() === 0x4A"
-    ],
-    [
-     "pressUntil",
-     "Space",
-     " ",
-     32,
-     150,
-     3000,
-     "overlay() !== 0x4A",
-     240000
-    ],
-    [
-     "eval",
-     "'name ended: ' + overlay().toString(16)"
     ]
    ]
   }
