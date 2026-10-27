@@ -192,6 +192,7 @@ target_sources(MarioParty2Recompiled PRIVATE
     ${CMAKE_SOURCE_DIR}/src/game/config.cpp
     ${CMAKE_SOURCE_DIR}/src/game/libultra.cpp
     ${CMAKE_SOURCE_DIR}/lib/mario-party-engine/src/process_threads.cpp
+    ${CMAKE_SOURCE_DIR}/lib/mario-party-engine/src/hud.cpp
     ${CMAKE_SOURCE_DIR}/src/game/recomp_api.cpp
     ${CMAKE_SOURCE_DIR}/src/game/survey.cpp
 )
@@ -214,6 +215,7 @@ target_include_directories(MarioParty2Recompiled PRIVATE
     ${CMAKE_SOURCE_DIR}/lib/rt64/src
     ${CMAKE_SOURCE_DIR}/lib/rt64/src/rhi
     ${CMAKE_SOURCE_DIR}/lib/rt64/src/render
+    ${CMAKE_SOURCE_DIR}/lib/rt64/include
     ${CMAKE_SOURCE_DIR}/lib/RecompFrontend/recompinput/include
     ${CMAKE_SOURCE_DIR}/lib/RecompFrontend/recompui/include
     ${CMAKE_SOURCE_DIR}/lib/RecompFrontend/recompui/src
