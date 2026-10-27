@@ -59,8 +59,8 @@ for the next one while the current one plays, so its own ending goes there. The 
 
 `tools/play_plan.json` reaches a board as a player does, by the keyboard's defaults (Enter is Start, Space A): Start
 through the logos, the opening and the title into Mario Land, then A through Toad's greeting, the warp pipe and Rules
-Land, on a new save, into the board Toad teaches the rules on, which four computer players play with the board engine.
-Which screen is up is the overlay `omOvlGotoEx` last went to, a word at 0x800FA63C: Mario Land is 0x5B, Rules Land
+Land, on a new save, to where Rules Land leaves for the board Toad teaches the rules on, which the survey turns into
+Western Land, where four computer players play with the board engine. Which screen is up is the overlay `omOvlGotoEx` last went to, a word at 0x800FA63C: Mario Land is 0x5B, Rules Land
 0x4D and its board 0x4C, the six boards 0x3E (Western Land), 0x41, 0x43, 0x45, 0x47 and 0x49 (Bowser Land), their
 duels 0x3F to 0x4A between them, the minigames 0x01 to 0x3C, a minigame's explanation 0x5F or 0x60 and its results
 0x6F.

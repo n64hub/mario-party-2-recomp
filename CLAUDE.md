@@ -23,7 +23,9 @@ This repo is the game: its recompilation, the patches over it, the desktop build
   tag. The web support every recomp's page shares is developed and documented there; `tools/build_n64recomp.sh` and
   `CMakeLists.txt` apply its `patches/` to the other three.
 - `docs/processes.md`: the engine's process scheduler, how it runs on threads here and what a game on the same engine
-  reuses. `docs/web.md`: the web page.
+  reuses. `docs/web.md`: the web page, its shader list (`src/rt64_shaders.txt`, recorded by `tools/shader_plan.json`)
+  and the survey (`patches/survey.c`, `src/game/survey.cpp`, `tools/survey.js`) that takes a plan to any board or
+  minigame.
 - Comments beside the code, for how and why: each file's header. Read the header of the file you change and update
   it in the same commit.
 
@@ -62,6 +64,12 @@ This repo is the game: its recompilation, the patches over it, the desktop build
   that hardware reaches.
 - **Microcodes.** Graphics go to RT64. Audio: aspMain, recompiled by RSPRecomp from `aspMain.us.toml` (its header
   says how its layout was found; it is Bomberman 64's microcode, byte for byte).
+- **Overlays by number.** The debug menu's table in the ROM (`ovl_00_Debug`'s `debug_ovl_table`) names every overlay
+  with its minigame's ID, and its groups table each minigame's teams; `docs/web.md` (The plan) lists the ones plans
+  use. A board opens a minigame by its explanation screen (0x5F for IDs below 30, 0x60 for the others), which reads
+  GwSystem's chosenMinigameIndex; the board code reads GwSystem's current_board_index for its own tables.
+- **Widescreen.** `patches/widescreen.c` takes a camera's scissor to the window's edges and keeps a board's ground
+  tiles that DispCheck would cull outside 4:3; its header says what still draws in 4:3.
 - **Saves.** EEPROM, 4 Kbit. `main.cpp` declares `SaveType::Eep4k`; the runtime keeps it in `saves/`.
 - **Input.** RecompFrontend's default bindings. Keyboard: WASD the stick, Space A, Left Shift B, Q Z, R R, E L,
   Enter Start, the arrows the C buttons.
