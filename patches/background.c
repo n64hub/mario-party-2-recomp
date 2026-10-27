@@ -102,8 +102,6 @@ void func_800271D8_27DD8(void* ptr);
 void func_800A5530_A6130(void* ptr, s32 size);
 s16 func_8007C058_7CC58(s32 arg0, s32 arg1, s32 arg2);
 void func_8007C094_7CC94(s16 saved);
-void func_8003FB9C_4079C(Gfx** gfx, void* image, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7, s32 arg8,
-                         s32 arg9, s32 arg10, s32 arg11, s32 arg12, s32 arg13, s32 arg14, s32 arg15, s32 arg16);
 
 // The slots past the game's 50, and their tiles.
 static BgSlot extra_slots[SLOTS - GAME_SLOTS];
@@ -313,12 +311,9 @@ static void gfx_words(Gfx** gfx, u32 w0, u32 w1) {
     g->words.w1 = w1;
 }
 
-// func_80051BCC_527CC: a tile, as its 64x32 and 64x16 parts, at (x, y) on the map, each a quad (board_back.c says why).
-static void draw_tile(Gfx** gfx, u8* data, s32 x, s32 y) {
-    func_8003FB9C_4079C(gfx, data, 0, 2, 0x40, 0x20, 0, 0, 0x40, 0x20, 0, 1, 1, 6, 5, 0, 0);
-    board_back_quad(gfx, x, y, TILE_WIDTH, 32, 0, 0);
-    func_8003FB9C_4079C(gfx, data + (TILE_WIDTH * 32 * 2), 0, 2, 0x40, 0x10, 0, 0, 0x40, 0x10, 0, 1, 1, 6, 4, 0, 0);
-    board_back_quad(gfx, x, y + 32, TILE_WIDTH, 16, 0, 0);
+// The tile at (j, i) in the grid, or NULL past the grid or where there is none.
+static u8* tile_data(s32 j, s32 i) {
+    return ((j < COLUMNS) && (i < ROWS) && (grid[j][i] != NULL)) ? grid[j][i]->data : NULL;
 }
 
 RECOMP_PATCH void func_80052B4C_5374C(Gfx** game_gfx, s32 arg1, u8 arg2) {
@@ -361,7 +356,10 @@ RECOMP_PATCH void func_80052B4C_5374C(Gfx** game_gfx, s32 arg1, u8 arg2) {
     for (i = 0; i < ROWS; i++) {
         for (j = 0; j < COLUMNS; j++) {
             if (grid[j][i] != NULL) {
-                draw_tile(gfx, grid[j][i]->data, (first_column + j) * TILE_WIDTH, (first_row + i) * TILE_HEIGHT);
+                // @recomp func_80051BCC_527CC's 64x32 and 64x16 parts, each loaded alone and filtered, met in a
+                // seam at a high resolution: loaded with their neighbours' edge texels (board_back.c says why).
+                board_back_tile(gfx, (first_column + j) * TILE_WIDTH, (first_row + i) * TILE_HEIGHT, grid[j][i]->data,
+                                tile_data(j + 1, i), tile_data(j, i + 1), tile_data(j + 1, i + 1));
             }
         }
     }
