@@ -1,0 +1,2483 @@
+{
+ "page": "MarioParty2Recompiled.html",
+ "header": [
+  "The RT64 shaders the web page builds: one shader description a line, other mode L and H, color combiner L and H,",
+  "flags, in hex. RT64 specializes each one's WGSL when the page is built and builds them with the game waiting: those",
+  "above the first \"section\" line before the game starts, and a section's when the game first draws with its shaders, so",
+  "that nothing draws with the ubershader, which integrated graphics can't afford (N64Recomp-browser's docs/porting.md,",
+  "Prebuilt shader lists).",
+  "Recorded by code, not by playing: bash tools/record_shaders.sh (its header says how) runs N64Recomp-browser's",
+  "tools/record_shaders.mjs with tools/shader_plan.json, which loads the page fresh for each section. Section 0 is the",
+  "launcher, the logos, the opening and the title with Start (Enter), and Mario Land on a new save. RulesBoard is A",
+  "(Space) through Toad's greeting, the warp pipe and Rules Land into the board Toad teaches the rules on, then 90 s of A",
+  "with four computer players on it. Then a section for each of the six boards, WesternLand to BowserLand, which the",
+  "survey (patches/survey.c, tools/survey.js) sends Rules Land's trip to the rules' board to, with GwSystem's board index",
+  "set as the game leaves for it, played by the computer for a whole turn: its start, four players' moves, the minigame",
+  "it picks by its explanation screen, the results and back. Then the 60 minigames, six a section in their overlays'",
+  "order: the survey takes the trip to the rules' board to the first one's explanation screen (0x5F or 0x60) with its ID,",
+  "the groups the game's debug menu gives its kind (four players, 1 vs 3, 2 vs 2) and four computer players, as a board",
+  "opens a minigame, each one's end to the next one's explanation, and the last one's to the minigame results (0x6F),",
+  "which go back to Rules Land: the board's results (0x70), where some minigames end, read a board the trip",
+  "never loaded. A plays them to their ends. Not recorded: the six duels, which pick among their board's spaces and so",
+  "play only from a board's own duel, Mini-Game Land, the Mini-Game Coaster, a party's setup, a board's ending and the",
+  "options. Flags follow settings (filtering, HDR, MSAA, upscaling), so a change to one of those defaults means recording",
+  "again."
+ ],
+ "load": [
+  [
+   "wait",
+   8000
+  ]
+ ],
+ "setup": [
+  [
+   "rom",
+   627,
+   364
+  ],
+  [
+   "wait",
+   3000
+  ]
+ ],
+ "start": [
+  [
+   "click",
+   627,
+   364
+  ],
+  [
+   "wait",
+   15000
+  ],
+  [
+   "evalFile",
+   "survey.js"
+  ],
+  [
+   "pressUntil",
+   "Enter",
+   "Enter",
+   13,
+   150,
+   2500,
+   "overlay() === 0x5B",
+   90000
+  ],
+  [
+   "need",
+   "overlay() === 0x5B"
+  ],
+  [
+   "wait",
+   3000
+  ]
+ ],
+ "sections": [
+  {
+   "name": "RulesBoard",
+   "steps": [
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x4C",
+     120000
+    ],
+    [
+     "need",
+     "overlay() === 0x4C"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "false",
+     90000
+    ]
+   ]
+  },
+  {
+   "name": "WesternLand",
+   "steps": [
+    [
+     "eval",
+     "board(0x4C, 0)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x3E",
+     120000
+    ],
+    [
+     "need",
+     "overlay() === 0x3E"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     2000,
+     "overlay() === 0x5F || overlay() === 0x60",
+     360000
+    ],
+    [
+     "eval",
+     "'explanation ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     2000,
+     "overlay() === 0x3E",
+     300000
+    ],
+    [
+     "need",
+     "overlay() === 0x3E"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     2000,
+     "false",
+     20000
+    ]
+   ]
+  },
+  {
+   "name": "PirateLand",
+   "steps": [
+    [
+     "eval",
+     "board(0x4C, 1)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x41",
+     120000
+    ],
+    [
+     "need",
+     "overlay() === 0x41"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     2000,
+     "overlay() === 0x5F || overlay() === 0x60",
+     360000
+    ],
+    [
+     "eval",
+     "'explanation ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     2000,
+     "overlay() === 0x41",
+     300000
+    ],
+    [
+     "need",
+     "overlay() === 0x41"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     2000,
+     "false",
+     20000
+    ]
+   ]
+  },
+  {
+   "name": "HorrorLand",
+   "steps": [
+    [
+     "eval",
+     "board(0x4C, 2)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x43",
+     120000
+    ],
+    [
+     "need",
+     "overlay() === 0x43"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     2000,
+     "overlay() === 0x5F || overlay() === 0x60",
+     360000
+    ],
+    [
+     "eval",
+     "'explanation ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     2000,
+     "overlay() === 0x43",
+     300000
+    ],
+    [
+     "need",
+     "overlay() === 0x43"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     2000,
+     "false",
+     20000
+    ]
+   ]
+  },
+  {
+   "name": "SpaceLand",
+   "steps": [
+    [
+     "eval",
+     "board(0x4C, 3)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x45",
+     120000
+    ],
+    [
+     "need",
+     "overlay() === 0x45"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     2000,
+     "overlay() === 0x5F || overlay() === 0x60",
+     360000
+    ],
+    [
+     "eval",
+     "'explanation ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     2000,
+     "overlay() === 0x45",
+     300000
+    ],
+    [
+     "need",
+     "overlay() === 0x45"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     2000,
+     "false",
+     20000
+    ]
+   ]
+  },
+  {
+   "name": "MysteryLand",
+   "steps": [
+    [
+     "eval",
+     "board(0x4C, 4)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x47",
+     120000
+    ],
+    [
+     "need",
+     "overlay() === 0x47"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     2000,
+     "overlay() === 0x5F || overlay() === 0x60",
+     360000
+    ],
+    [
+     "eval",
+     "'explanation ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     2000,
+     "overlay() === 0x47",
+     300000
+    ],
+    [
+     "need",
+     "overlay() === 0x47"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     2000,
+     "false",
+     20000
+    ]
+   ]
+  },
+  {
+   "name": "BowserLand",
+   "steps": [
+    [
+     "eval",
+     "board(0x4C, 5)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x49",
+     120000
+    ],
+    [
+     "need",
+     "overlay() === 0x49"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     2000,
+     "overlay() === 0x5F || overlay() === 0x60",
+     360000
+    ],
+    [
+     "eval",
+     "'explanation ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     2000,
+     "overlay() === 0x49",
+     300000
+    ],
+    [
+     "need",
+     "overlay() === 0x49"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     2000,
+     "false",
+     20000
+    ]
+   ]
+  },
+  {
+   "name": "Minigames01",
+   "steps": [
+    [
+     "eval",
+     "minigame(0x4C, 0x01, [0, 1, 2, 3]) + ' BowserSlots'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x01",
+     150000
+    ],
+    [
+     "need",
+     "overlay() === 0x01"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x02, [0, 1, 2, 3]) + ' RollOutTheBarrels'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x01",
+     240000
+    ],
+    [
+     "eval",
+     "'BowserSlots ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x02",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x02"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x03, [0, 1, 2, 3]) + ' CoffinCongestion'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x02",
+     240000
+    ],
+    [
+     "eval",
+     "'RollOutTheBarrels ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x03",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x03"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x04, [0, 1, 2, 3]) + ' HammerSlammer'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x03",
+     240000
+    ],
+    [
+     "eval",
+     "'CoffinCongestion ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x04",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x04"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x05, [0, 1, 2, 3]) + ' GiveMeABrake'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x04",
+     240000
+    ],
+    [
+     "eval",
+     "'HammerSlammer ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x05",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x05"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x06, [0, 1, 2, 3]) + ' MalletGoRound'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x05",
+     240000
+    ],
+    [
+     "eval",
+     "'GiveMeABrake ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x06",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x06"
+    ],
+    [
+     "eval",
+     "ask(-1, 0x6F, 0, 0x14, false) + ' (the results)'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x06",
+     240000
+    ],
+    [
+     "eval",
+     "'MalletGoRound ended: ' + overlay().toString(16)"
+    ]
+   ]
+  },
+  {
+   "name": "Minigames07",
+   "steps": [
+    [
+     "eval",
+     "minigame(0x4C, 0x07, [0, 1, 2, 3]) + ' GrabBag'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x07",
+     150000
+    ],
+    [
+     "need",
+     "overlay() === 0x07"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x25, [0, 1, 2, 3]) + ' LavaTileIsle'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x07",
+     240000
+    ],
+    [
+     "eval",
+     "'GrabBag ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x08",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x08"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x08, [0, 1, 2, 3]) + ' BumperBalloonCars'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x08",
+     240000
+    ],
+    [
+     "eval",
+     "'LavaTileIsle ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x09",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x09"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x09, [0, 1, 2, 3]) + ' RakinEmIn'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x09",
+     240000
+    ],
+    [
+     "eval",
+     "'BumperBalloonCars ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x0A",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x0A"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x0B, [0, 1, 2, 3]) + ' DayAtTheRaces'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x0A",
+     240000
+    ],
+    [
+     "eval",
+     "'RakinEmIn ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x0B",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x0B"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x26, [0, 1, 2, 3]) + ' HotRopeJump'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x0B",
+     240000
+    ],
+    [
+     "eval",
+     "'DayAtTheRaces ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x0C",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x0C"
+    ],
+    [
+     "eval",
+     "ask(-1, 0x6F, 0, 0x14, false) + ' (the results)'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x0C",
+     240000
+    ],
+    [
+     "eval",
+     "'HotRopeJump ended: ' + overlay().toString(16)"
+    ]
+   ]
+  },
+  {
+   "name": "Minigames0D",
+   "steps": [
+    [
+     "eval",
+     "minigame(0x4C, 0x0E, [0, 1, 2, 3]) + ' HotBobOmb'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x0D",
+     150000
+    ],
+    [
+     "need",
+     "overlay() === 0x0D"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x0F, [0, 1, 1, 1]) + ' BowlOver'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x0D",
+     240000
+    ],
+    [
+     "eval",
+     "'HotBobOmb ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x0E",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x0E"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x10, [0, 1, 1, 1]) + ' RainbowRun'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x0E",
+     240000
+    ],
+    [
+     "eval",
+     "'BowlOver ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x0F",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x0F"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x11, [0, 1, 1, 1]) + ' CraneGame'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x0F",
+     240000
+    ],
+    [
+     "eval",
+     "'RainbowRun ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x10",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x10"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x12, [0, 1, 1, 1]) + ' MoveToTheMusic'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x10",
+     240000
+    ],
+    [
+     "eval",
+     "'CraneGame ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x11",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x11"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x13, [0, 1, 1, 1]) + ' BobOmbBarrage'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x11",
+     240000
+    ],
+    [
+     "eval",
+     "'MoveToTheMusic ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x12",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x12"
+    ],
+    [
+     "eval",
+     "ask(-1, 0x6F, 0, 0x14, false) + ' (the results)'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x12",
+     240000
+    ],
+    [
+     "eval",
+     "'BobOmbBarrage ended: ' + overlay().toString(16)"
+    ]
+   ]
+  },
+  {
+   "name": "Minigames13",
+   "steps": [
+    [
+     "eval",
+     "minigame(0x4C, 0x14, [0, 1, 1, 1]) + ' LookAway'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x13",
+     150000
+    ],
+    [
+     "need",
+     "overlay() === 0x13"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x15, [0, 1, 1, 1]) + ' ShockDropOrRoll'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x13",
+     240000
+    ],
+    [
+     "eval",
+     "'LookAway ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x14",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x14"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x16, [0, 1, 1, 1]) + ' LightsOut'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x14",
+     240000
+    ],
+    [
+     "eval",
+     "'ShockDropOrRoll ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x15",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x15"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x17, [0, 1, 1, 1]) + ' FiletRelay'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x15",
+     240000
+    ],
+    [
+     "eval",
+     "'LightsOut ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x16",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x16"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x18, [0, 1, 1, 1]) + ' Archerival'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x16",
+     240000
+    ],
+    [
+     "eval",
+     "'FiletRelay ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x17",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x17"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x1A, [0, 1, 2, 3]) + ' ToadBandstand'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x17",
+     240000
+    ],
+    [
+     "eval",
+     "'Archerival ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x18",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x18"
+    ],
+    [
+     "eval",
+     "ask(-1, 0x6F, 0, 0x14, false) + ' (the results)'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x18",
+     240000
+    ],
+    [
+     "eval",
+     "'ToadBandstand ended: ' + overlay().toString(16)"
+    ]
+   ]
+  },
+  {
+   "name": "Minigames19",
+   "steps": [
+    [
+     "eval",
+     "minigame(0x4C, 0x1B, [0, 0, 1, 1]) + ' BobsledRun'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x19",
+     150000
+    ],
+    [
+     "need",
+     "overlay() === 0x19"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x1C, [0, 0, 1, 1]) + ' HandcarHavoc'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x19",
+     240000
+    ],
+    [
+     "eval",
+     "'BobsledRun ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x1A",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x1A"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x1E, [0, 0, 1, 1]) + ' BallonBurst'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x1A",
+     240000
+    ],
+    [
+     "eval",
+     "'HandcarHavoc ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x1B",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x1B"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x1F, [0, 1, 2, 3]) + ' SkyPilots'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x1B",
+     240000
+    ],
+    [
+     "eval",
+     "'BallonBurst ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x1C",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x1C"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x20, [0, 0, 1, 1]) + ' SpeedHockey'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x1C",
+     240000
+    ],
+    [
+     "eval",
+     "'SkyPilots ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x1D",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x1D"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x21, [0, 0, 1, 1]) + ' CakeFactory'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x1D",
+     240000
+    ],
+    [
+     "eval",
+     "'SpeedHockey ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x1E",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x1E"
+    ],
+    [
+     "eval",
+     "ask(-1, 0x6F, 0, 0x14, false) + ' (the results)'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x1E",
+     240000
+    ],
+    [
+     "eval",
+     "'CakeFactory ended: ' + overlay().toString(16)"
+    ]
+   ]
+  },
+  {
+   "name": "Minigames1F",
+   "steps": [
+    [
+     "eval",
+     "minigame(0x4C, 0x23, [0, 0, 1, 1]) + ' DungeonDash'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x1F",
+     150000
+    ],
+    [
+     "need",
+     "overlay() === 0x1F"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x24, [0, 0, 1, 1]) + ' MagnetCarta'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x1F",
+     240000
+    ],
+    [
+     "eval",
+     "'DungeonDash ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x20",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x20"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x0C, [0, 1, 2, 3]) + ' FaceLift'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x20",
+     240000
+    ],
+    [
+     "eval",
+     "'MagnetCarta ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x21",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x21"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x27, [0, 1, 2, 3]) + ' ShellShocked'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x21",
+     240000
+    ],
+    [
+     "eval",
+     "'FaceLift ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x22",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x22"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x0D, [0, 1, 2, 3]) + ' CrazyCutters'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x22",
+     240000
+    ],
+    [
+     "eval",
+     "'ShellShocked ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x23",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x23"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x28, [0, 1, 2, 3]) + ' ToadInTheBox'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x23",
+     240000
+    ],
+    [
+     "eval",
+     "'CrazyCutters ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x24",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x24"
+    ],
+    [
+     "eval",
+     "ask(-1, 0x6F, 0, 0x14, false) + ' (the results)'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x24",
+     240000
+    ],
+    [
+     "eval",
+     "'ToadInTheBox ended: ' + overlay().toString(16)"
+    ]
+   ]
+  },
+  {
+   "name": "Minigames25",
+   "steps": [
+    [
+     "eval",
+     "minigame(0x4C, 0x29, [0, 1, 2, 3]) + ' MechaMarathon'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x25",
+     150000
+    ],
+    [
+     "need",
+     "overlay() === 0x25"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x2A, [0, 1, 2, 3]) + ' RollCall'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x25",
+     240000
+    ],
+    [
+     "eval",
+     "'MechaMarathon ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x26",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x26"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x2B, [0, 1, 2, 3]) + ' AbandonShip'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x26",
+     240000
+    ],
+    [
+     "eval",
+     "'RollCall ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x27",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x27"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x2C, [0, 1, 2, 3]) + ' PlatformPeril'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x27",
+     240000
+    ],
+    [
+     "eval",
+     "'AbandonShip ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x28",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x28"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x2D, [0, 1, 2, 3]) + ' TotemPolePound'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x28",
+     240000
+    ],
+    [
+     "eval",
+     "'PlatformPeril ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x29",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x29"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x2E, [0, 1, 2, 3]) + ' BumperBalls'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x29",
+     240000
+    ],
+    [
+     "eval",
+     "'TotemPolePound ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x2A",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x2A"
+    ],
+    [
+     "eval",
+     "ask(-1, 0x6F, 0, 0x14, false) + ' (the results)'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x2A",
+     240000
+    ],
+    [
+     "eval",
+     "'BumperBalls ended: ' + overlay().toString(16)"
+    ]
+   ]
+  },
+  {
+   "name": "Minigames2B",
+   "steps": [
+    [
+     "eval",
+     "minigame(0x4C, 0x30, [0, 1, 2, 3]) + ' BombsAway'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x2B",
+     150000
+    ],
+    [
+     "need",
+     "overlay() === 0x2B"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x31, [0, 1, 2, 3]) + ' TipsyTourney'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x2B",
+     240000
+    ],
+    [
+     "eval",
+     "'BombsAway ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x2C",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x2C"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x32, [0, 1, 2, 3]) + ' HoneycombHavoc'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x2C",
+     240000
+    ],
+    [
+     "eval",
+     "'TipsyTourney ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x2D",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x2D"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x33, [0, 1, 2, 3]) + ' HexagonHeat'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x2D",
+     240000
+    ],
+    [
+     "eval",
+     "'HoneycombHavoc ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x2E",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x2E"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x34, [0, 1, 2, 3]) + ' SkateboardScamper'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x2E",
+     240000
+    ],
+    [
+     "eval",
+     "'HexagonHeat ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x2F",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x2F"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x35, [0, 1, 2, 3]) + ' SlotCarDerby'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x2F",
+     240000
+    ],
+    [
+     "eval",
+     "'SkateboardScamper ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x30",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x30"
+    ],
+    [
+     "eval",
+     "ask(-1, 0x6F, 0, 0x14, false) + ' (the results)'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x30",
+     240000
+    ],
+    [
+     "eval",
+     "'SlotCarDerby ended: ' + overlay().toString(16)"
+    ]
+   ]
+  },
+  {
+   "name": "Minigames31",
+   "steps": [
+    [
+     "eval",
+     "minigame(0x4C, 0x36, [0, 1, 2, 3]) + ' ShyGuySays'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x31",
+     150000
+    ],
+    [
+     "need",
+     "overlay() === 0x31"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x37, [0, 1, 2, 3]) + ' SneakNSnore'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x31",
+     240000
+    ],
+    [
+     "eval",
+     "'ShyGuySays ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x32",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x32"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x39, [0, 1, 1, 1]) + ' DriversEd'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x32",
+     240000
+    ],
+    [
+     "eval",
+     "'SneakNSnore ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x33",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x33"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x3A, [0, 1, 1, 1]) + ' ChanceTime'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x33",
+     240000
+    ],
+    [
+     "eval",
+     "'DriversEd ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x34",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x34"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x42, [0, 0, 1, 1]) + ' LooneyLumberjacks'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x34",
+     240000
+    ],
+    [
+     "eval",
+     "'ChanceTime ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x35",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x35"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x45, [0, 1, 2, 3]) + ' DizzyDancing'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x35",
+     240000
+    ],
+    [
+     "eval",
+     "'LooneyLumberjacks ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x36",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x36"
+    ],
+    [
+     "eval",
+     "ask(-1, 0x6F, 0, 0x14, false) + ' (the results)'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x36",
+     240000
+    ],
+    [
+     "eval",
+     "'DizzyDancing ended: ' + overlay().toString(16)"
+    ]
+   ]
+  },
+  {
+   "name": "Minigames37",
+   "steps": [
+    [
+     "eval",
+     "minigame(0x4C, 0x46, [0, 1, 2, 3]) + ' TileDriver'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x37",
+     150000
+    ],
+    [
+     "need",
+     "overlay() === 0x37"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x47, [0, 1, 2, 3]) + ' QuicksandCache'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x37",
+     240000
+    ],
+    [
+     "eval",
+     "'TileDriver ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x38",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x38"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x41, [0, 1, 2, 3]) + ' BowsersBigBlast'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x38",
+     240000
+    ],
+    [
+     "eval",
+     "'QuicksandCache ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x39",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x39"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x43, [0, 1, 2, 3]) + ' TorpedoTargets'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x39",
+     240000
+    ],
+    [
+     "eval",
+     "'BowsersBigBlast ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x3A",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x3A"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x44, [0, 0, 1, 1]) + ' DestructionDuet'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x3A",
+     240000
+    ],
+    [
+     "eval",
+     "'TorpedoTargets ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x3B",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x3B"
+    ],
+    [
+     "eval",
+     "minigame(-1, 0x48, [0, 1, 2, 3]) + ' DeepSeaSalvage'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x3B",
+     240000
+    ],
+    [
+     "eval",
+     "'DestructionDuet ended: ' + overlay().toString(16)"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "overlay() === 0x3C",
+     90000
+    ],
+    [
+     "need",
+     "overlay() === 0x3C"
+    ],
+    [
+     "eval",
+     "ask(-1, 0x6F, 0, 0x14, false) + ' (the results)'"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     3000,
+     "overlay() !== 0x3C",
+     240000
+    ],
+    [
+     "eval",
+     "'DeepSeaSalvage ended: ' + overlay().toString(16)"
+    ]
+   ]
+  }
+ ]
+}

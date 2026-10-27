@@ -23,3 +23,9 @@ stubs = [
     # __osEnqueueAndYield), which splat leaves unnamed: N64Recomp leaves the named parts out and the runtime has its own.
     "func_8009D24C_9DE4C",
 ]
+
+# The survey (patches/survey.c): the overlay a script asked for, in place of the one the game goes to.
+[[patches.hook]]
+func = "omOvlGotoEx"
+before_vram = 0x800771EC
+text = "{ void mp_survey_goto(uint8_t*, gpr*, gpr*, gpr*); mp_survey_goto(rdram, &ctx->r4, &ctx->r5, &ctx->r6); }"
