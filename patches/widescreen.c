@@ -1,61 +1,99 @@
 // What a picture wider than 4:3 needs besides RT64's Aspect Ratio Expand, which widens the 3D: a camera's view drawn to
-// the window's edges. Mario Party's patches/widescreen.c, on Mario Party 2's camera.
+// the window's edges, its 3D moving with the board under it. The engine's patches/camera_view.c says how; here are
+// Mario Party 2's two functions that start a camera's view, src/20C70.c's func_800204C0_210C0 (its viewport and
+// projection) and func_8002064C_2124C (its scissor). A board pans its 3D by moving its camera's viewport
+// (src/51630.c's func_80053230_53E30, which sets camera 0's with CameraViewportSet and the background's scroll with
+// func_80050E84_51A84).
 //
-// Each camera has a scissor (src/20C70.c's func_8002064C_2124C sets it before the camera's view is drawn, from the
-// rectangle CameraScissorSet gave it, four floats in the camera), and RT64 keeps a scissor that stops short of 4:3's
-// edges as far in from the window's, so a board, whose camera keeps the console's overscan border (16, 12, 304, 228),
-// drew in a box with black at its sides. A camera whose scissor is the whole screen or that border is drawn to the
-// window's edges (gEXSetScissor, from the left and right): from top to bottom for the border, and between the game's
-// own top and bottom otherwise. A screen split between players (a minigame's halves and quarters) keeps the game's.
+// A camera keeps its scissor as four floats, which the game writes in 10.2 fixed point, and camera_view.c takes whole
+// pixels. A camera whose scissor's sides are whole pixels, the whole screen's or the border's, is widened, its top and
+// bottom to the pixel at or above the game's where they have a part of one; any other keeps the game's scissor as it
+// writes it.
 //
-// A board's ground is a picture in tiles, each a sprite placed in 3D (Expand widens them with the rest), and the game
-// draws only the sprites DispCheck finds on the screen: a corner of the sprite's projected quad inside 320x240, or an
-// edge across it. So a board seen from close drew its ground in 4:3 with nothing at the sides. DispCheck here keeps a
-// sprite whose quad's bounds reach a screen half as wide again at each side (x from -160 to 480: a picture up to 8:3,
-// wider than 21:9); a sprite past 4:3's sides is drawn only where the window is wider than 4:3. A board seen from
-// afar and the minigames reach the window's edges; a board's close view, the players' panels at its foot, still
-// draws in 4:3.
+// Some of what the game draws in 2D, its sprites (SprDisp), it draws only where DispCheck finds them on the screen: a
+// corner of the sprite's quad (SprDispCheck's, in screen pixels) inside 320x240, or an edge across it. DispCheck here
+// keeps a sprite whose quad's bounds reach a screen half as wide again at each side (x from -160 to 480: a picture up
+// to 8:3, wider than 21:9); a sprite past 4:3's sides is drawn only where the window is wider than 4:3. A board's
+// ground is no sprite but its background's tiles (background.c).
 
 #include "patches.h"
-#include "rt64_extended_gbi.h"
+#include "../lib/mario-party-engine/patches/camera_view.h"
 
-#define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240
-#define BORDER_LEFT 16
-#define BORDER_TOP 12
-#define BORDER_RIGHT 304
-#define BORDER_BOTTOM 228
 #define WIDE_LEFT -160.0f
 #define WIDE_RIGHT 480.0f
+// The frames in flight, each with its own viewport and matrices in a camera.
+#define FRAMES 4
 
-// The cameras (0x2B8 bytes each) and, in each, its scissor's corners.
 typedef struct {
-    u8 unk_00[0x98];
-    f32 scissor[4];
-    u8 unk_A8[0x2B8 - 0xA8];
+    Mtx projection;
+    Mtx modelview;
+} CameraMatrices;
+
+// A camera (src/20C70.c's, 0x2B8 bytes): what func_800204C0_210C0 and func_8002064C_2124C read.
+typedef struct {
+    /* 0x000 */ u16 persp_norm; // guPerspective's, from func_800203DC_20FDC
+    /* 0x002 */ u8 unk_002[0x30 - 0x02];
+    /* 0x030 */ f32 viewport_scale[3]; // CameraViewportSet's, in quarter pixels
+    /* 0x03C */ f32 viewport_trans[3];
+    /* 0x048 */ u8 unk_048[0x58 - 0x48];
+    /* 0x058 */ Vp viewports[FRAMES]; // the frame's (D_800FFFD6_100BD6) as func_800204C0_210C0 writes it
+    /* 0x098 */ f32 scissor[4];       // CameraScissorSet's: left, top, right, bottom
+    /* 0x0A8 */ u8 unk_0A8[0xB8 - 0xA8];
+    /* 0x0B8 */ CameraMatrices matrices[FRAMES];
 } Camera;
 
+_Static_assert(__builtin_offsetof(Camera, viewports) == 0x58, "Camera's viewports");
+_Static_assert(__builtin_offsetof(Camera, scissor) == 0x98, "Camera's scissor");
+_Static_assert(sizeof(Camera) == 0x2B8, "Camera's size");
+
 extern Camera* D_800C9B80_CA780;
+// The frame being built, of FRAMES.
+extern s16 D_800FFFD6_100BD6;
+
+// A scissor's edge as the game writes it, in 10.2 fixed point.
+static s32 fixed(f32 edge) {
+    return (s32)(edge * 4.0f) & 0xFFF;
+}
+
+static s32 widened(Camera* camera) {
+    s32 left = fixed(camera->scissor[0]);
+    s32 right = fixed(camera->scissor[2]);
+
+    return !((left | right) & 3) && camera_view_widened(left >> 2, right >> 2);
+}
+
+RECOMP_PATCH void func_800204C0_210C0(s16 index, Gfx** gfx) {
+    Camera* camera = &D_800C9B80_CA780[index];
+    CameraMatrices* matrices = &camera->matrices[D_800FFFD6_100BD6];
+    Vp* viewport = &camera->viewports[D_800FFFD6_100BD6];
+
+    viewport->vp.vscale[0] = (s16)camera->viewport_scale[0];
+    viewport->vp.vscale[1] = (s16)camera->viewport_scale[1];
+    viewport->vp.vscale[2] = (s16)camera->viewport_scale[2];
+    viewport->vp.vtrans[0] = (s16)camera->viewport_trans[0];
+    viewport->vp.vtrans[1] = (s16)camera->viewport_trans[1];
+    viewport->vp.vtrans[2] = (s16)camera->viewport_trans[2];
+
+    // @recomp A widened camera's viewport in the middle, what it was moved by in its projection.
+    camera_view_projection(gfx, index, viewport, camera->persp_norm, &matrices->projection, widened(camera));
+    gSPMatrix((*gfx)++, (u32)&matrices->modelview + 0x80000000, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+}
 
 RECOMP_PATCH void func_8002064C_2124C(s16 index, Gfx** gfx) {
     Camera* camera = &D_800C9B80_CA780[index];
-    // The game's 10.2 fixed point, as it writes the scissor.
-    s32 x0 = (s32)(camera->scissor[0] * 4.0f) & 0xFFF;
-    s32 y0 = (s32)(camera->scissor[1] * 4.0f) & 0xFFF;
-    s32 x1 = (s32)(camera->scissor[2] * 4.0f) & 0xFFF;
-    s32 y1 = (s32)(camera->scissor[3] * 4.0f) & 0xFFF;
+    s32 left = fixed(camera->scissor[0]);
+    s32 top = fixed(camera->scissor[1]);
+    s32 right = fixed(camera->scissor[2]);
+    s32 bottom = fixed(camera->scissor[3]);
 
     // @recomp The whole screen, or the border, to the window's edges.
-    if (((x0 == 0) && (x1 == SCREEN_WIDTH * 4)) || ((x0 == BORDER_LEFT * 4) && (x1 == BORDER_RIGHT * 4))) {
-        if ((y0 == BORDER_TOP * 4) && (y1 == BORDER_BOTTOM * 4)) {
-            y0 = 0;
-            y1 = SCREEN_HEIGHT * 4;
-        }
-        gEXSetScissor((*gfx)++, G_SC_NON_INTERLACE, G_EX_ORIGIN_LEFT, G_EX_ORIGIN_RIGHT, 0, y0 / 4, 0, y1 / 4);
+    if (widened(camera)) {
+        camera_view_scissor(gfx, left >> 2, top >> 2, right >> 2, bottom >> 2);
         return;
     }
 
-    gDPSetScissorFrac((*gfx)++, G_SC_NON_INTERLACE, x0, y0, x1, y1);
+    gDPSetScissorFrac((*gfx)++, G_SC_NON_INTERLACE, left, top, right, bottom);
 }
 
 // A sprite's projected quad, its corners in screen pixels: on the screen (1) or not (0), against the wide screen above.

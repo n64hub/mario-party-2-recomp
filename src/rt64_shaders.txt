@@ -17,8 +17,9 @@
 # which go back to Rules Land: the board's results (0x70), where some minigames end, read a board the trip
 # never loaded. A plays them to their ends. Not recorded: the six duels, which pick among their board's spaces and so
 # play only from a board's own duel, Mini-Game Land, the Mini-Game Coaster, a party's setup, a board's ending and the
-# options. Two shaders plays missed, one in the opening and one on Western Land, are added to section 0 by hand. Flags
-# follow settings (filtering, HDR, MSAA, upscaling), so a change to one of those defaults means recording again.
+# options. Four shaders plays missed, one in the opening, one on Western Land and two of a board's background drawn
+# as quads (patches/background.c), are added to section 0 by hand. Flags follow settings (filtering, HDR, MSAA,
+# upscaling), so a change to one of those defaults means recording again.
 0c087009 00808cff fcffffff fffcf279 04cb540b
 005041c9 00800cff fcffffff fffdf6fb 0800000b
 005041c8 00800cff fcffffff fffdf6fb 0800000b
@@ -57,6 +58,8 @@
 00404241 00008cff fcff97ff ff2cfe7f 04cb540b
 005049d9 00882cbf fc121624 ff2fffff 088a000e
 00552049 0080acff fc141c28 ff3bffff 0ccb540b
+00552248 00803cff fcffffff fffcf279 0aaaaa08
+00552248 00803cff fcffffff fffcf279 0aaaaa0a
 section RulesBoard
 00404241 00000cff fcff97ff ff2dfeff 0ccb540b
 00404241 00000cff fcffffff fffdf2f9 0ccb540b

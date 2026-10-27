@@ -70,8 +70,13 @@ This repo is the game: its recompilation, the patches over it, the desktop build
   with its minigame's ID, and its groups table each minigame's teams; `docs/web.md` (The plan) lists the ones plans
   use. A board opens a minigame by its explanation screen (0x5F for IDs below 30, 0x60 for the others), which reads
   GwSystem's chosenMinigameIndex; the board code reads GwSystem's current_board_index for its own tables.
-- **Widescreen.** `patches/widescreen.c` takes a camera's scissor to the window's edges and keeps a board's ground
-  tiles that DispCheck would cull outside 4:3; its header says what still draws in 4:3.
+- **Drawing.** The game draws a frame in several RSP tasks, one a camera (`func_800204C0_210C0`), which RT64
+  interpolates as one game frame with RT64_GAME_FRAME_WORKLOADS, on with Emscripten and in `CMakeLists.txt` on the
+  desktop too. It draws a picture wider than 4:3 with Aspect Ratio Expand: `patches/widescreen.c` takes a camera's
+  view to the window's edges and `patches/background.c` a board's background, through lib/mario-party-engine's
+  `camera_view.c` and `board_back.c` (their headers say how), and keeps the sprites DispCheck would cull outside 4:3.
+  Two hooks in `us.toml` keep the scissor the game's text sets inside the picture. A map no wider than 320 (Rules
+  Land's START, 5x5 tiles) keeps black at its sides: the game has nothing beside it to draw.
 - **Saves.** EEPROM, 4 Kbit. `main.cpp` declares `SaveType::Eep4k`; the runtime keeps it in `saves/`.
 - **Input.** RecompFrontend's default bindings. Keyboard: WASD the stick, Space A, Left Shift B, Q Z, R R, E L,
   Enter Start, the arrows the C buttons.
