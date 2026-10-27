@@ -10,7 +10,8 @@ A native PC port of the N64 *Mario Party 2* (USA), made by static recompilation
 and menus): the game's own MIPS code translated to C and run natively, with RT64 drawing it. The symbols come from the
 [mariopartyrd/marioparty2](https://github.com/mariopartyrd/marioparty2) decompilation. It is not an emulator. It is built
 the way [Mario Party: Recompiled](https://github.com/n64hub/mario-party-recomp) is, on the same engine work: Hudson's
-process scheduler runs the same way, from the same file.
+process scheduler runs the same way, from the code the Mario Party recomps share
+([mario-party-engine](https://github.com/n64hub/mario-party-engine)).
 
 The repo holds no ROM, no asset from the game and no data extracted from it: you supply your own ROM, and nothing in
 git or CI is made from one except the symbol names and addresses in `syms/`.

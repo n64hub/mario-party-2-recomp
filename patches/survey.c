@@ -19,8 +19,8 @@
 // overlay it leaves reads it too (Rules Land never leaves with another board's).
 //
 // `warps` counts the requests taken, and every frame the struct carries the overlay playing (the one omOvlGotoEx last
-// went to) and a count of the scheduler's frames (HuPrcCall, patches/process.c, calls survey_tick once a frame), which
-// plans hold their waits on.
+// went to) and a count of the scheduler's frames (HuPrcCall, lib/mario-party-engine/patches/process.c, calls
+// survey_tick once a frame), which plans hold their waits on.
 
 #include "patches.h"
 
