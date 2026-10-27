@@ -7,6 +7,12 @@
 // drew in a box with black at its sides. A camera whose scissor is the whole screen or that border is drawn to the
 // window's edges (gEXSetScissor, from the left and right): from top to bottom for the border, and between the game's
 // own top and bottom otherwise. A screen split between players (a minigame's halves and quarters) keeps the game's.
+//
+// A board's ground is a picture in tiles, each a sprite placed in 3D (Expand widens them with the rest), and the game
+// draws only the sprites DispCheck finds on the screen: a corner of the sprite's projected quad inside 320x240, or an
+// edge across it. So a board seen from close drew its ground in 4:3 with nothing at the sides. DispCheck here keeps a
+// sprite whose quad's bounds reach a screen half as wide again at each side (x from -160 to 480: a picture up to 8:3,
+// wider than 21:9); a sprite past 4:3's sides is drawn only where the window is wider than 4:3.
 
 #include "patches.h"
 #include "rt64_extended_gbi.h"
@@ -17,6 +23,8 @@
 #define BORDER_TOP 12
 #define BORDER_RIGHT 304
 #define BORDER_BOTTOM 228
+#define WIDE_LEFT -160.0f
+#define WIDE_RIGHT 480.0f
 
 // The cameras (0x2B8 bytes each) and, in each, its scissor's corners.
 typedef struct {
@@ -46,4 +54,23 @@ RECOMP_PATCH void func_8002064C_2124C(s16 index, Gfx** gfx) {
     }
 
     gDPSetScissorFrac((*gfx)++, G_SC_NON_INTERLACE, x0, y0, x1, y1);
+}
+
+// A sprite's projected quad, its corners in screen pixels: on the screen (1) or not (0), against the wide screen above.
+RECOMP_PATCH s32 DispCheck(Vec2f* corners) {
+    f32 left = corners[0].unk_00;
+    f32 right = left;
+    f32 top = corners[0].unk_04;
+    f32 bottom = top;
+    s32 i;
+
+    for (i = 1; i < 4; i++) {
+        f32 x = corners[i].unk_00;
+        f32 y = corners[i].unk_04;
+        if (x < left) left = x;
+        if (x > right) right = x;
+        if (y < top) top = y;
+        if (y > bottom) bottom = y;
+    }
+    return (left < WIDE_RIGHT) && (right >= WIDE_LEFT) && (top < SCREEN_HEIGHT) && (bottom >= 0.0f);
 }
