@@ -41,9 +41,9 @@ the rules' board's, one a board and one a run of minigames, each built as the ga
 by code, not by playing (`tools/record_shaders.sh`'s header says how to run it): `tools/shader_plan.json` reaches Mario
 Land as the play plan does, then the survey takes Rules Land's trip to the rules' board to each of the six boards, with
 four computer players, and to every minigame in turn, Chance Time among them, each played to its end by four computer
-players: 448 shaders, 36 of them the boot's. The six duels are not in it: a duel picks among its board's spaces, so it
-plays only from a board's own duel, and the survey's trip to one ends in a division by zero or a read out of bounds; a
-page builds a duel's shaders as it first draws them. A section the game moves past without drawing from it is recorded
+players: 450 shaders, 38 of them the boot's (two of those added by hand, missed by plays). The six duels are not in
+it: a duel picks among its board's spaces, so it plays only from a board's own duel, and the survey's trip to one ends
+in a division by zero or a read out of bounds; a page builds a duel's shaders as it first draws them. A section the game moves past without drawing from it is recorded
 again alone with `--only`.
 
 ## The survey
