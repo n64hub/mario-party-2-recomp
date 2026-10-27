@@ -12,7 +12,9 @@
 // draws only the sprites DispCheck finds on the screen: a corner of the sprite's projected quad inside 320x240, or an
 // edge across it. So a board seen from close drew its ground in 4:3 with nothing at the sides. DispCheck here keeps a
 // sprite whose quad's bounds reach a screen half as wide again at each side (x from -160 to 480: a picture up to 8:3,
-// wider than 21:9); a sprite past 4:3's sides is drawn only where the window is wider than 4:3.
+// wider than 21:9); a sprite past 4:3's sides is drawn only where the window is wider than 4:3. A board seen from
+// afar and the minigames reach the window's edges; a board's close view, the players' panels at its foot, still
+// draws in 4:3.
 
 #include "patches.h"
 #include "rt64_extended_gbi.h"
