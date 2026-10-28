@@ -500,6 +500,14 @@ int main(int argc, char** argv) {
     // as any of them ends, so the screen flickers between parts of a frame.
     ultramodern::renderer::callbacks_t renderer_callbacks{
         .create_render_context = [](uint8_t* rdram, ultramodern::renderer::WindowHandle window_handle, bool developer_mode) {
+            // On the page render to RAM is off: the game's CPU never reads a frame it drew (its swap chain hands a
+            // framebuffer to its lists only as a segment, which RT64 reads on the GPU), and each copy into RDRAM waits for
+            // the browser's readback, at the end of every one of the RSP tasks a frame is drawn in. A 4-player minigame
+            // drawn in 15-17 of them (Tile Driver) made 8-9 game frames a second uncapped and 21 at 60 Hz with the copy,
+            // 12 and 21 with the copy a list late, and the game's own 30 without it. The desktop build keeps RT64's default.
+#ifdef __EMSCRIPTEN__
+            recompui::renderer::set_render_to_ram(false);
+#endif
             return recompui::renderer::create_render_context(rdram, window_handle, ultramodern::renderer::PresentationMode::SkipBuffering, developer_mode);
         },
     };
