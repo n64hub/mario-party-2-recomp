@@ -79,7 +79,8 @@ This repo is the game: its recompilation, the patches over it, the desktop build
   `us.toml`'s hooks in the sprite manager draw the board's HUD, the players' panels, at the window's left and right
   edges, through lib/mario-party-engine's `src/hud.cpp`, and its hooks in the wipe module draw a wipe's colour (an
   iris's black, a fade) to them too, through its `src/wipe.cpp`. Two hooks in `us.toml` keep the scissor the game's text sets inside the picture. A map no wider than 320 (Rules
-  Land's START, 5x5 tiles) keeps black at its sides: the game has nothing beside it to draw.
+  Land's START, 5x5 tiles) keeps black at its sides, the game having nothing beside it to draw, and its 3D and the HUD
+  keep inside 4:3 with it (`board_back.c`).
 - **Saves.** EEPROM, 4 Kbit. `main.cpp` declares `SaveType::Eep4k`; the runtime keeps it in `saves/`.
 - **Input.** RecompFrontend's default bindings. Keyboard: WASD the stick, Space A, Left Shift B, Q Z, R R, E L,
   Enter Start, the arrows the C buttons.
