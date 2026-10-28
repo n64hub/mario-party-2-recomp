@@ -269,20 +269,20 @@ RECOMP_PATCH u16 func_80050E98_51A98(Vec2f* arg0, f32 arg1) {
     f32 side = map_past_4x3(D_800CC210_CCE10) / arg1;
     u16 ret = 0;
 
-    if (arg0->x <= ((-D_800DF9C6_E05C6 + 160.0f) / arg1) + 160.0f + side) {
-        arg0->x = ((-D_800DF9C6_E05C6 + 160.0f) / arg1) + 160.0f + side;
+    if (arg0->unk_00 <= ((-D_800DF9C6_E05C6 + 160.0f) / arg1) + 160.0f + side) {
+        arg0->unk_00 = ((-D_800DF9C6_E05C6 + 160.0f) / arg1) + 160.0f + side;
         ret = 1;
     }
-    if (((D_800DF9C6_E05C6 - 160.0f) / arg1) + 160.0f + ((320.0f / arg1) - (320.0f / (arg1 * D_800CC210_CCE10))) - side <= arg0->x) {
-        arg0->x = ((D_800DF9C6_E05C6 - 160.0f) / arg1) + 160.0f + ((320.0f / arg1) - (320.0f / (arg1 * D_800CC210_CCE10))) - side;
+    if (((D_800DF9C6_E05C6 - 160.0f) / arg1) + 160.0f + ((320.0f / arg1) - (320.0f / (arg1 * D_800CC210_CCE10))) - side <= arg0->unk_00) {
+        arg0->unk_00 = ((D_800DF9C6_E05C6 - 160.0f) / arg1) + 160.0f + ((320.0f / arg1) - (320.0f / (arg1 * D_800CC210_CCE10))) - side;
         ret |= 2;
     }
-    if (arg0->y <= ((-D_800DF9C8_E05C8 + 120.0f) / arg1) + 120.0f) {
-        arg0->y = ((-D_800DF9C8_E05C8 + 120.0f) / arg1) + 120.0f;
+    if (arg0->unk_04 <= ((-D_800DF9C8_E05C8 + 120.0f) / arg1) + 120.0f) {
+        arg0->unk_04 = ((-D_800DF9C8_E05C8 + 120.0f) / arg1) + 120.0f;
         ret |= 4;
     }
-    if (((D_800DF9C8_E05C8 - 120.0f) / arg1) + 120.0f + ((240.0f / arg1) - (240.0f / (arg1 * D_800CC210_CCE10))) <= arg0->y) {
-        arg0->y = ((D_800DF9C8_E05C8 - 120.0f) / arg1) + 120.0f + ((240.0f / arg1) - (240.0f / (arg1 * D_800CC210_CCE10)));
+    if (((D_800DF9C8_E05C8 - 120.0f) / arg1) + 120.0f + ((240.0f / arg1) - (240.0f / (arg1 * D_800CC210_CCE10))) <= arg0->unk_04) {
+        arg0->unk_04 = ((D_800DF9C8_E05C8 - 120.0f) / arg1) + 120.0f + ((240.0f / arg1) - (240.0f / (arg1 * D_800CC210_CCE10)));
         ret |= 8;
     }
     return ret;
