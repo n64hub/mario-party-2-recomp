@@ -15,7 +15,13 @@
 // interpolated scroll, so the window's sides show more of the map, and the board pans with its 3D spaces. A tile past
 // 4:3 is sent to be read only while fewer than EXTRA_IN_FLIGHT are on their way, since each holds its compressed bytes
 // on the game's heap (HuMemMemoryAllocPerm) until it is decompressed, and the game sized that heap for its 50.
-// Everything else is the game's as it was.
+//
+// The game keeps the board's camera where a 320x240 picture stays on the map (func_80050E98_51A98, which every board's
+// camera goes through), so at the map's edge the wider picture ran past it, where there are no tiles, and a black
+// strip opened at the window's side. Here the camera is kept where the wider picture stays on the map
+// (lib/mario-party-engine's src/aspect_ratio.cpp gives its width), so it stops short of the edge by as much of the
+// map as the window shows past 4:3, and all a 4:3 picture showed there is still on screen. A map narrower than the
+// picture keeps its camera in its middle, with black at both sides. Everything else is the game's as it was.
 
 #include "patches.h"
 #include "game/malloc.h"
@@ -102,6 +108,7 @@ void func_800271D8_27DD8(void* ptr);
 void func_800A5530_A6130(void* ptr, s32 size);
 s16 func_8007C058_7CC58(s32 arg0, s32 arg1, s32 arg2);
 void func_8007C094_7CC94(s16 saved);
+f32 mp_aspect_ratio(void);
 
 // The slots past the game's 50, and their tiles.
 static BgSlot extra_slots[SLOTS - GAME_SLOTS];
@@ -239,6 +246,46 @@ static BgSlot* tile_slot(u16 tile, s32 games) {
         return free_slot;
     }
     return NULL;
+}
+
+// How much of the map the window shows past each side of the 4:3 picture, at the zoom: a screen x is the map's
+// (x - left) * zoom, and the window reaches 120 * aspect from the picture's middle, as far as the map has room for.
+static f32 map_past_4x3(f32 zoom) {
+    f32 side = 120.0f * mp_aspect_ratio() - 160.0f;
+
+    if (side > D_800DF9C6_E05C6 * zoom - 160.0f) {
+        side = D_800DF9C6_E05C6 * zoom - 160.0f;
+    }
+    if (side < 0.0f) {
+        side = 0.0f;
+    }
+    return side / zoom;
+}
+
+// func_80050E98_51A98: the camera's place at the scale arg1, kept where the picture stays on the map; what it was kept
+// from, a bit for each edge.
+RECOMP_PATCH u16 func_80050E98_51A98(Vec2f* arg0, f32 arg1) {
+    // @recomp Each x bound in by the map the window shows past 4:3.
+    f32 side = map_past_4x3(D_800CC210_CCE10) / arg1;
+    u16 ret = 0;
+
+    if (arg0->unk_00 <= ((-D_800DF9C6_E05C6 + 160.0f) / arg1) + 160.0f + side) {
+        arg0->unk_00 = ((-D_800DF9C6_E05C6 + 160.0f) / arg1) + 160.0f + side;
+        ret = 1;
+    }
+    if (((D_800DF9C6_E05C6 - 160.0f) / arg1) + 160.0f + ((320.0f / arg1) - (320.0f / (arg1 * D_800CC210_CCE10))) - side <= arg0->unk_00) {
+        arg0->unk_00 = ((D_800DF9C6_E05C6 - 160.0f) / arg1) + 160.0f + ((320.0f / arg1) - (320.0f / (arg1 * D_800CC210_CCE10))) - side;
+        ret |= 2;
+    }
+    if (arg0->unk_04 <= ((-D_800DF9C8_E05C8 + 120.0f) / arg1) + 120.0f) {
+        arg0->unk_04 = ((-D_800DF9C8_E05C8 + 120.0f) / arg1) + 120.0f;
+        ret |= 4;
+    }
+    if (((D_800DF9C8_E05C8 - 120.0f) / arg1) + 120.0f + ((240.0f / arg1) - (240.0f / (arg1 * D_800CC210_CCE10))) <= arg0->unk_04) {
+        arg0->unk_04 = ((D_800DF9C8_E05C8 - 120.0f) / arg1) + 120.0f + ((240.0f / arg1) - (240.0f / (arg1 * D_800CC210_CCE10)));
+        ret |= 8;
+    }
+    return ret;
 }
 
 // Where the picture's left and top edges are on the map at a zoom of 1, as func_80051BCC_527CC draws: the scroll, less
