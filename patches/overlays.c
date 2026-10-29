@@ -20,6 +20,8 @@ typedef struct OverlayTable {
 extern OverlayTable _ovltbl[];
 extern u8 D_800C8870_C9470;
 void HuRomDmaCodeRead(u8* src, u8* dest, s32 size);
+// widescreen.c's: whether the scene an overlay plays is drawn at 4:3.
+void widescreen_overlay(s32 overlay);
 
 RECOMP_PATCH void OvlLoad(s32 overlayIndex) {
     u8* romStart;
@@ -44,4 +46,7 @@ RECOMP_PATCH void OvlLoad(s32 overlayIndex) {
     }
 
     D_800C8870_C9470 = 0;
+
+    // @recomp Whether the scene is drawn at 4:3 (widescreen.c).
+    widescreen_overlay(overlayIndex);
 }
