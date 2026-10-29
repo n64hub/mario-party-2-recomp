@@ -57,7 +57,8 @@ text = "ctx->r2 = 0x005003C0;"
 # the panel's group at 0x8 and its xPos and yPos, the place the board moves it by, at 0x10), the groups killed
 # (SprKill(group), and the sprite manager's init, func_8007F630_80230, which forgets them all; the groups' addresses
 # are at 0x800FA1B0) and each sprite drawn (SprDisp(gfx, sprite), every path out of it through 0x800858E8 with gfx in
-# s5).
+# s5), with its width on the screen: its frame's width (a u16 at 0x4 of its frame, 12 bytes each, from the frames its
+# data at 0x84 points to, by its frame's index at 0x90) by its x scale (a float at 0x18), as SprDisp reads them.
 [[patches.hook]]
 func = "func_800600F8_60CF8"
 before_vram = 0x800600F8
@@ -76,7 +77,7 @@ text = "{ void mp_hud_reset(uint8_t*); mp_hud_reset(rdram); }"
 [[patches.hook]]
 func = "SprDisp"
 before_vram = 0x800849D4
-text = "{ void mp_hud_sprite_start(uint8_t*, gpr, gpr); mp_hud_sprite_start(rdram, ctx->r4, ctx->r5); }"
+text = "{ void mp_hud_sprite_width(uint8_t*, float); void mp_hud_sprite_start(uint8_t*, gpr, gpr); gpr s = ctx->r5; gpr data = (gpr)(int32_t)MEM_W(0x84, s); if (data != 0) { gpr frame = (gpr)(int32_t)MEM_W(0x0, data) + MEM_H(0x90, s) * 12; union { uint32_t u; float f; } scale; scale.u = (uint32_t)MEM_W(0x18, s); mp_hud_sprite_width(rdram, MEM_HU(0x4, frame) * scale.f); } mp_hud_sprite_start(rdram, ctx->r4, ctx->r5); }"
 
 [[patches.hook]]
 func = "SprDisp"
