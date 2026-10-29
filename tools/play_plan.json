@@ -107,7 +107,7 @@
   ],
   [
    "need",
-   "[0x3E, 0x5F, 0x60].includes(overlay()) || (overlay() >= 0x01 && overlay() <= 0x3C)"
+   "[0x3E, 0x5F, 0x60, 0x6F].includes(overlay()) || (overlay() >= 0x01 && overlay() <= 0x3C)"
   ]
  ]
 }
