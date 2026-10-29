@@ -77,7 +77,8 @@ This repo is the game: its recompilation, the patches over it, the desktop build
   view to the window's edges and `patches/background.c` a board's background, through lib/mario-party-engine's
   `camera_view.c` and `board_back.c` (their headers say how), and keeps the sprites DispCheck would cull outside 4:3.
   `us.toml`'s hooks in the sprite manager draw the board's HUD, the players' panels, at the window's left and right
-  edges, through lib/mario-party-engine's `src/hud.cpp`, and its hooks in the wipe module draw a wipe's colour (an
+  edges, and a picture as wide as the screen (Abandon Ship's sky) stretched over the window wherever the game puts it,
+  through lib/mario-party-engine's `src/hud.cpp`, and its hooks in the wipe module draw a wipe's colour (an
   iris's black, a fade) to them too, through its `src/wipe.cpp`. Two hooks in `us.toml` keep the scissor the game's
   text sets inside the picture. The board's camera stops where the wider picture reaches the map's edge
   (`patches/background.c`, with the engine's `src/aspect_ratio.cpp`). A map no wider than 320 (Rules Land's START,
