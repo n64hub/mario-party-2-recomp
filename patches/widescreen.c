@@ -120,13 +120,14 @@ RECOMP_PATCH s32 DispCheck(Vec2f* corners) {
 // widescreen_overlay as each loads): the engine keeps black at the window's sides while one plays (board_back.h's
 // board_back_scene_4x3), its src/wipe.cpp drawing it over whatever the scene's 3D reaches past 4:3 at the end of each
 // frame (us.toml's hook at func_800286FC_292FC's gDPFullSync), and the camera's view and the HUD stay inside 4:3.
+// - 0x18, Toad Bandstand: a stage of the screen's size, and past 4:3 the leaves around Toad, seen close as he conducts.
 // - 0x1E, Cake Factory: its wall is a 2D picture of the screen's size, and its conveyor belts ran on past it.
 // - 0x1F, Dungeon Dash: two views side by side, each a team's, and their walls and lanterns past 4:3.
 // - 0x21, Face Lift: four faces on a 2D picture of the screen's size, and the pieces they are made of past it.
 // - 0x23, Crazy Cutters: its picture is 80 tiles of 32x32, each a copy of the frame, which stay at 4:3, and its stage
 //   past 4:3, the logs and spiked bars, was drawn over the black.
 // - 0x24, Toad in the Box: a stage of the screen's size, and its curtains and floor past it.
-static const u8 overlays_4x3[] = { 0x1E, 0x1F, 0x21, 0x23, 0x24 };
+static const u8 overlays_4x3[] = { 0x18, 0x1E, 0x1F, 0x21, 0x23, 0x24 };
 
 void widescreen_overlay(s32 overlay) {
     s32 picture_4x3 = FALSE;
