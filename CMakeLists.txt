@@ -85,6 +85,10 @@ set(ULTRAMODERN_SCREEN_UPDATE_AFTER_VI ON)
 # interpolated between drew its triangles from the frame before's matrices to none, across the whole view in front of
 # the board, a flat light grey.
 set(RT64_SKIP_COLLAPSED_MATCHES ON)
+# The game turns RecompFrontend's single-player mode off, so that four people play four players (src/main/main.cpp),
+# and plays as single-player mode until players are assigned, as with Emscripten: without it a player alone needed to
+# assign their pad or keyboard first, and the keyboard played every pad's player.
+set(RECOMPINPUT_SINGLE_PLAYER_UNTIL_ASSIGNED ON)
 add_subdirectory(${CMAKE_SOURCE_DIR}/lib/rt64 ${CMAKE_BINARY_DIR}/rt64)
 
 set(BUILD_SHARED_LIBS OFF)
