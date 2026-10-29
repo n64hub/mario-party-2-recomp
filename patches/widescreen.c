@@ -120,6 +120,8 @@ RECOMP_PATCH s32 DispCheck(Vec2f* corners) {
 // widescreen_overlay as each loads): the engine keeps black at the window's sides while one plays (board_back.h's
 // board_back_scene_4x3), its src/wipe.cpp drawing it over whatever the scene's 3D reaches past 4:3 at the end of each
 // frame (us.toml's hook at func_800286FC_292FC's gDPFullSync), and the camera's view and the HUD stay inside 4:3.
+// - 0x05, Give Me a Brake (Western Land's item minigame): its desert, the cacti and fence with it, is a picture of the
+//   screen's size, and the frame's white clear showed past it.
 // - 0x18, Toad Bandstand: a stage of the screen's size, and past 4:3 the leaves around Toad, seen close as he conducts.
 // - 0x1E, Cake Factory: its wall is a 2D picture of the screen's size, and its conveyor belts ran on past it.
 // - 0x1F, Dungeon Dash: two views side by side, each a team's, and their walls and lanterns past 4:3.
@@ -131,7 +133,7 @@ RECOMP_PATCH s32 DispCheck(Vec2f* corners) {
 //   over white.
 // - 0x3A, Torpedo Targets: two views, one over the other, each a team's: the bottom one was widened past 4:3 and the
 //   top one not, its subs drawn past its sides into the black.
-static const u8 overlays_4x3[] = { 0x18, 0x1E, 0x1F, 0x21, 0x23, 0x24, 0x2C, 0x3A };
+static const u8 overlays_4x3[] = { 0x05, 0x18, 0x1E, 0x1F, 0x21, 0x23, 0x24, 0x2C, 0x3A };
 
 void widescreen_overlay(s32 overlay) {
     s32 picture_4x3 = FALSE;
