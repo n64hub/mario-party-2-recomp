@@ -129,7 +129,9 @@ RECOMP_PATCH s32 DispCheck(Vec2f* corners) {
 // - 0x24, Toad in the Box: a stage of the screen's size, and its curtains and floor past it.
 // - 0x2C, Tipsy Tourney: four quarters on a starry picture of the screen's size, and past it the boards' wooden frames
 //   over white.
-static const u8 overlays_4x3[] = { 0x18, 0x1E, 0x1F, 0x21, 0x23, 0x24, 0x2C };
+// - 0x3A, Torpedo Targets: two views, one over the other, each a team's: the bottom one was widened past 4:3 and the
+//   top one not, its subs drawn past its sides into the black.
+static const u8 overlays_4x3[] = { 0x18, 0x1E, 0x1F, 0x21, 0x23, 0x24, 0x2C, 0x3A };
 
 void widescreen_overlay(s32 overlay) {
     s32 picture_4x3 = FALSE;
