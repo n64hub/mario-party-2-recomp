@@ -118,7 +118,7 @@ RECOMP_PATCH s32 DispCheck(Vec2f* corners) {
 
 // The scenes the game draws at 4:3 whatever the window's width, by their overlay (OvlLoad, overlays.c, calls
 // widescreen_overlay as each loads): the engine keeps black at the window's sides while one plays (board_back.h's
-// board_back_scene_4x3), its src/wipe.cpp drawing it over whatever the scene's 3D reaches past 4:3 at the end of each
+// board_back_scene_widest, at 4:3), its src/wipe.cpp drawing it over whatever the scene's 3D reaches past 4:3 at the end of each
 // frame (us.toml's hook at func_800286FC_292FC's gDPFullSync), and the camera's view and the HUD stay inside 4:3.
 // - 0x05, Give Me a Brake (Western Land's item minigame): its desert, the cacti and fence with it, is a picture of the
 //   screen's size, and the frame's white clear showed past it.
@@ -128,6 +128,9 @@ RECOMP_PATCH s32 DispCheck(Vec2f* corners) {
 // - 0x0A, Rakin' 'Em In: the ground around the 3D table, the dark pit it stands in and four empty stumps, is a 2D
 //   picture of the screen's size, the stumps behind the players' at 4:3. Stretched over a wide window, the pit was
 //   nearly three times the table's width and the empty stumps stood out at the window's sides.
+// - 0x11, Move to the Music: the night sky, the moon and the towers are a 2D picture of the screen's size, and the 3D
+//   steps ran on past it over the black.
+// - 0x16, Filet Relay: two views side by side, each a team's, inside 4:3, and past them the frame's clear, a grey blue.
 // - 0x17, Archerival: the counter, the bushes and the brick wall the targets stand behind are a 2D picture of the
 //   screen's size. Stretched over a wide window, only the wall's middle was drawn, blank grey boxes beside it, and the
 //   targets bunched over the middle.
@@ -145,22 +148,51 @@ RECOMP_PATCH s32 DispCheck(Vec2f* corners) {
 // - 0x24, Toad in the Box: a stage of the screen's size, and its curtains and floor past it.
 // - 0x2C, Tipsy Tourney: four quarters on a starry picture of the screen's size, and past it the boards' wooden frames
 //   over white.
+// - 0x2E, Hexagon Heat: the lava's far edge is narrower than 4:3, and past 4:3 the lava's near part went on beside
+//   black corners as wide as the window.
+// - 0x38, Quicksand Cache: the rock ring around the sand is built about as wide as 4:3, its corners short of it.
+// - 0x39, Bowser's Big Blast: the room's side walls end at 4:3's edges.
 // - 0x3A, Torpedo Targets: two views, one over the other, each a team's: the bottom one was widened past 4:3 and the
 //   top one not, its subs drawn past its sides into the black.
 // - 0x3C, Deep Sea Salvage: the sky, the sea and the reef far off are a 2D picture of the screen's size, and the sea
 //   the players swim in, tinted, and its rocks are 3D that ends at 4:3's edges. Stretched over a wide window, the
 //   picture's sea went on past them beside the water's tinted box.
-static const u8 overlays_4x3[] = { 0x05, 0x09, 0x0A, 0x17, 0x18, 0x1B, 0x1E, 0x1F, 0x20, 0x21, 0x23, 0x24,
-                                   0x2C, 0x3A, 0x3C };
+static const u8 overlays_4x3[] = { 0x05, 0x09, 0x0A, 0x11, 0x16, 0x17, 0x18, 0x1B, 0x1E, 0x1F, 0x20, 0x21, 0x23,
+                                   0x24, 0x2C, 0x2E, 0x38, 0x39, 0x3A, 0x3C };
+
+// The minigames whose 3D ends short of a wide window's edges, and the widest each is drawn, its width over its height:
+// where its stage ends at its narrowest across the minigame's play, at a 32:9 window. The engine draws one to the
+// window's edges up to that width and black past it (board_back_scene_widest), the camera's view stopping there, so a
+// window no wider shows it as before, and a wider one shows black bars rather than the frame's clear around the stage.
+// - 0x02, Roll Out the Barrels: the side walls' outer edges, 2.1, past them the clear's teal.
+// - 0x25, Mecha-Marathon: the grass field's edges, 2.05 (its far corner, a wedge of black at the top left, shows at
+//   4:3 too).
+// - 0x2A, Bumper Balls: the lava's far edge, 1.65.
+// - 0x2F, Skateboard Scamper: the start room's end wall, 1.8; the hall the players run fills a 32:9 window.
+// - 0x32, Sneak 'n' Snore: the outer wall's bottom edge, 1.45, past it the clear's grey.
+// - 0x3B, Destruction Duet: the cave's arch, 1.5.
+typedef struct {
+    u8 overlay;
+    f32 widest;
+} ShortScene;
+
+static const ShortScene short_scenes[] = {
+    { 0x02, 2.1f }, { 0x25, 2.05f }, { 0x2A, 1.65f }, { 0x2F, 1.8f }, { 0x32, 1.45f }, { 0x3B, 1.5f },
+};
 
 void widescreen_overlay(s32 overlay) {
-    s32 picture_4x3 = FALSE;
+    f32 widest = 0.0f;
     u32 i;
 
     for (i = 0; i < sizeof(overlays_4x3); i++) {
         if (overlays_4x3[i] == overlay) {
-            picture_4x3 = TRUE;
+            widest = 4.0f / 3.0f;
         }
     }
-    board_back_scene_4x3(picture_4x3);
+    for (i = 0; i < sizeof(short_scenes) / sizeof(short_scenes[0]); i++) {
+        if (short_scenes[i].overlay == overlay) {
+            widest = short_scenes[i].widest;
+        }
+    }
+    board_back_scene_widest(widest);
 }
