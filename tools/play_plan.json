@@ -6,8 +6,9 @@
   "leaves for the board Toad teaches the rules on. The survey (patches/survey.c, tools/survey.js) sends that trip to",
   "Western Land instead, where four computer players play with the board engine: dice, spaces, a minigame's pick. Which",
   "screen is up is the overlay omOvlGotoEx last went to, a word at 0x800FA63C: Mario Land is 0x5B, Rules Land 0x4D,",
-  "Western Land 0x3E, a minigame's explanation 0x5F or 0x60 and the minigames 0x01 to 0x3C; a need fails the run unless",
-  "the game is on Western Land or has left it for its minigame."
+  "Western Land 0x3E, a minigame's explanation 0x5F or 0x60, the minigames 0x01 to 0x3C, and the ranking after a",
+  "minigame's coins 0x3D; a need fails the run unless the game is on Western Land, has left it for its minigame, or is",
+  "back from one."
  ],
  "page": "MarioParty2Recompiled.html",
  "load": [
@@ -107,7 +108,7 @@
   ],
   [
    "need",
-   "[0x3E, 0x5F, 0x60, 0x6F].includes(overlay()) || (overlay() >= 0x01 && overlay() <= 0x3C)"
+   "[0x3D, 0x3E, 0x5F, 0x60, 0x6F].includes(overlay()) || (overlay() >= 0x01 && overlay() <= 0x3C)"
   ]
  ]
 }
