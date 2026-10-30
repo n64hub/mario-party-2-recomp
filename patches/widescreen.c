@@ -196,3 +196,23 @@ void widescreen_overlay(s32 overlay) {
     }
     board_back_scene_widest(widest);
 }
+
+// The seas of short_scenes that are widened in x so that they reach a wide window's edges (lib/mario-party-engine's
+// board_back_stage_widened, which moves the scene's widest out with them): a sea with nothing standing at its edges,
+// which reads the same wider. A room's walls, a stage built for 4:3 and a painted backdrop keep their cap.
+
+// The model instances (0xC0 bytes each), their scale at 0x34, which the object manager copies an object's onto only for
+// its first model.
+typedef struct {
+    u8 unk_00[0x34];
+    Vec scale;
+    u8 unk_40[0xC0 - 0x40];
+} ModelInstance;
+extern ModelInstance* D_800FC834_FD434;
+
+// Bumper Balls' lava (file 0x3A000C), the stage's second model, under the arena and as wide as its far edge at 1.65:
+// us.toml's hook calls this each frame from the stage's frame function, which scrolls the lava's textures and never
+// writes its scale.
+void widescreen_bumper_lava(omObjData* stage) {
+    D_800FC834_FD434[stage->model[1]].scale.x = board_back_stage_widened(1.65f);
+}
