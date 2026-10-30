@@ -18,6 +18,10 @@
 // (Bowser Land), which a board's shared code reads for its own tables: set as the game leaves, not before, since the
 // overlay it leaves reads it too (Rules Land never leaves with another board's).
 //
+// A minigame a request opened that is left to end with nothing asked would go to the board's results (0x70), which
+// read the map of a board the survey never loaded and trap: the hook sends it to the minigame results (0x6F) instead,
+// as a plan's own last minigame goes, and counts it in `strays`, so a plan's late ask is a missed step, not a trap.
+//
 // `warps` counts the requests taken, and every frame the struct carries the overlay playing (the one omOvlGotoEx last
 // went to) and a count of the scheduler's frames (HuPrcCall, lib/mario-party-engine/patches/process.c, calls
 // survey_tick once a frame), which plans hold their waits on.
@@ -43,9 +47,10 @@ struct Survey {
     volatile u32 computers;
     volatile s32 minigame;
     volatile s32 board;
+    volatile u32 strays;
 };
 
-struct Survey survey = { { 0x4D505254, 0x53525659 }, 0, -1, 0, 0, 0, 0, -1, 0, 0xFFFFFFFF, 0, -1, -1 }; // "MPRT" "SRVY"
+struct Survey survey = { { 0x4D505254, 0x53525659 }, 0, -1, 0, 0, 0, 0, -1, 0, 0xFFFFFFFF, 0, -1, -1, 0 }; // "MPRT" "SRVY"
 
 void survey_tick(void) {
     if (survey.frames == 0) {
