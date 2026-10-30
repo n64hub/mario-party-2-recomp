@@ -86,8 +86,9 @@ This repo is the game: its recompilation, the patches over it, the desktop build
   reaches the map's edge (`patches/background.c`, with the engine's `src/aspect_ratio.cpp`). A map no wider than 320
   (Rules Land's START, 5x5 tiles) keeps black at its sides, the game having nothing beside it to draw, and its 3D and
   the HUD keep inside 4:3 with it (`board_back.c`). So does a scene `patches/widescreen.c` lists as drawn at 4:3 (Crazy
-  Cutters and fourteen more minigames), black drawn over the window's sides at each frame's end (`us.toml`, the engine's
-  `src/wipe.cpp`).
+  Cutters and nineteen more minigames), black drawn over the window's sides at each frame's end (`us.toml`, the engine's
+  `src/wipe.cpp`). A minigame whose 3D ends short of a wide window's edges (Bumper Balls' lava, Sneak 'n' Snore's
+  walls) is drawn no wider than where it ends, `patches/widescreen.c`'s second list, with black bars only past that.
 - **Saves.** EEPROM, 4 Kbit. `main.cpp` declares `SaveType::Eep4k`; the runtime keeps it in `saves/`.
 - **Input.** RecompFrontend's default bindings. Keyboard: WASD the stick, Space A, Left Shift B, Q Z, R R, E L,
   Enter Start, the arrows the C buttons.
