@@ -110,8 +110,8 @@ before_vram = 0x800292CC
 text = "{ gpr mp_wipe_picture_sides(uint8_t*, gpr); ctx->r2 = mp_wipe_picture_sides(rdram, ctx->r2); }"
 
 # Bumper Balls' lava widened to a wide window's edges (patches/widescreen.c, widescreen_bumper_lava): the stage's frame
-# function, with the stage's object in s0, each frame.
+# function, with the stage's object in s0, each frame. The game's registers are kept around the call.
 [[patches.hook]]
 func = "func_80103430_211DD0_BumperBalls"
 before_vram = 0x80103494
-text = "{ void widescreen_bumper_lava(uint8_t*, recomp_context*); ctx->r4 = ctx->r16; widescreen_bumper_lava(rdram, ctx); }"
+text = "{ void widescreen_bumper_lava(uint8_t*, recomp_context*); recomp_context saved = *ctx; ctx->r4 = ctx->r16; widescreen_bumper_lava(rdram, ctx); *ctx = saved; }"
