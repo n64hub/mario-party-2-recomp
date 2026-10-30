@@ -1,5 +1,6 @@
 // The survey's natives (patches/survey.c says what it is for): where its struct is, and the hook at omOvlGotoEx's start
-// (us.toml) that sends the game to the overlay a script asked for in place of the one it was going to.
+// (us.toml) that sends the game to the overlay a script asked for in place of the one it was going to, and a minigame it
+// opened away from the board's results.
 
 #include <cstdio>
 #include <cstdlib>
@@ -20,6 +21,14 @@ namespace {
     constexpr int COMPUTERS = 0x2C;
     constexpr int MINIGAME = 0x30;
     constexpr int BOARD = 0x34;
+    constexpr int STRAYS = 0x38;
+
+    // The board's results, where some minigames end, and the minigame results, where a plan sends its last one.
+    constexpr int32_t BOARD_RESULTS = 0x70;
+    constexpr int32_t MINIGAME_RESULTS = 0x6F;
+
+    // Whether the last request taken opened a minigame (set its ID), which no board was loaded for.
+    bool opened_minigame = false;
 
     // gPlayers (0x800FD2C0, 0x34 bytes a player): its group (a minigame's side) at 0 and its flags at 6, bit 0 of the
     // low byte (7) the computer playing it (ovl_70_Results reads it so); GwSystem's chosenMinigameIndex (0x800F93C8), a
@@ -37,8 +46,10 @@ extern "C" void recomp_survey_register(uint8_t* rdram, recomp_context* ctx) {
 
 // The hook: omOvlGotoEx(overlay, event, stat)'s arguments, replaced by the request's if there is one and the game is
 // going to the overlay it names in `from` (or `from` is -1). An event or stat of -1 keeps the game's own. A request of
-// 1 is taken once; one of 2 every time until a script clears it. With MP_SURVEY_LOG set it prints each call, as the
-// game makes it and the minigame GwSystem has chosen, which is how a game's trips between overlays were read.
+// 1 is taken once; one of 2 every time until a script clears it. A trip no request is for, from a minigame the last
+// request opened to the board's results, goes to the minigame results (patches/survey.c). With MP_SURVEY_LOG set it
+// prints each call, as the game makes it and the minigame GwSystem has chosen, which is how a game's trips between
+// overlays were read.
 extern "C" void mp_survey_goto(uint8_t* rdram, gpr* overlay, gpr* event, gpr* stat) {
     static const bool log = getenv("MP_SURVEY_LOG") != nullptr;
     if (log) {
@@ -48,11 +59,20 @@ extern "C" void mp_survey_goto(uint8_t* rdram, gpr* overlay, gpr* event, gpr* st
             MEM_B(3 * PLAYER_SIZE, GW_PLAYER), (uint16_t)MEM_H(6, GW_PLAYER), (uint16_t)MEM_H(PLAYER_SIZE + 6, GW_PLAYER),
             (uint16_t)MEM_H(2 * PLAYER_SIZE + 6, GW_PLAYER), (uint16_t)MEM_H(3 * PLAYER_SIZE + 6, GW_PLAYER));
     }
-    if (survey_vram == 0 || MEM_W(REQUEST, survey_vram) == 0) {
+    if (survey_vram == 0) {
         return;
     }
     int32_t from = MEM_W(FROM, survey_vram);
-    if (from != -1 && from != (int32_t)*overlay) {
+    if (MEM_W(REQUEST, survey_vram) == 0 || (from != -1 && from != (int32_t)*overlay)) {
+        // No request for this trip. A minigame a request opened, going to the board's results, would read a board the
+        // survey never loaded and trap: it goes to the minigame results instead, counted in `strays`.
+        if (opened_minigame && (int32_t)*overlay == BOARD_RESULTS) {
+            *overlay = MINIGAME_RESULTS;
+            *event = 0;
+            *stat = 0x14;
+            opened_minigame = false;
+            MEM_W(STRAYS, survey_vram) = MEM_W(STRAYS, survey_vram) + 1;
+        }
         return;
     }
     *overlay = (int32_t)MEM_W(OVERLAY, survey_vram);
@@ -77,6 +97,7 @@ extern "C" void mp_survey_goto(uint8_t* rdram, gpr* overlay, gpr* event, gpr* st
     if (minigame != -1) {
         MEM_H(0, MINIGAME_INDEX) = (int16_t)minigame;
     }
+    opened_minigame = minigame != -1;
     int32_t board = MEM_W(BOARD, survey_vram);
     if (board != -1) {
         MEM_H(0, BOARD_INDEX) = (int16_t)board;

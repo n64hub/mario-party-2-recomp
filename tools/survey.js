@@ -16,9 +16,9 @@
 // 1 vs 3 and [0, 0, 1, 1] for 2 vs 2 and a duel; frames(), the scheduler's frame count (one a frame the game makes: its
 // own rate); mark() and rate(), how many frames a second the game made from the one to the other.
 // A minigame's ID is not its overlay (ID 0x13 plays in overlay 0x12, Tile Driver's 0x46 in 0x37), so a plan waits on
-// the overlay it plays in. One left to end with nothing asked goes to the board's results (0x70), which read the map of
-// a board the survey never loaded, allocate a size made of its garbage and trap ("memory access out of bounds" in
-// HuMemMemoryAlloc): ask the next minigame() before one ends.
+// the overlay it plays in. One left to end with nothing asked goes to the minigame results (0x6F), not the board's (0x70),
+// which read a board the survey never loaded, and counts in strays() (patches/survey.c): a late ask is taken as 0x6F
+// leaves.
 (() => {
   const magic = (a) => n64r(a) === 0x4d505254 && n64r(a + 4) === 0x53525659;
   if (!window.__survey) {
@@ -32,6 +32,7 @@
   window.overlay = () => n64r(s + 32) | 0;
   window.frames = () => n64r(s + 36) >>> 0;
   window.warps = () => n64r(s + 28) >>> 0;
+  window.strays = () => n64r(s + 56) >>> 0;
   window.untilOverlay = async (overlay, ms) => {
     const end = Date.now() + ms;
     while (window.overlay() !== overlay && Date.now() < end) await sleep(100);
