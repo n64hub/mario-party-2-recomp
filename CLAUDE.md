@@ -73,21 +73,21 @@ This repo is the game: its recompilation, the patches over it, the desktop build
   with its minigame's ID, and its groups table each minigame's teams; `docs/web.md` (The plan) lists the ones plans
   use. A board opens a minigame by its explanation screen (0x5F for IDs below 30, 0x60 for the others), which reads
   GwSystem's chosenMinigameIndex; the board code reads GwSystem's current_board_index for its own tables.
-- **Drawing.** The game draws a frame in several RSP tasks, one a camera (`func_800204C0_210C0`), which RT64
+-  **Drawing.** The game draws a frame in several RSP tasks, one a camera (`func_800204C0_210C0`), which RT64
   interpolates as one game frame with RT64_GAME_FRAME_WORKLOADS, on with Emscripten and in `CMakeLists.txt` on the
-  desktop too. It draws a picture wider than 4:3 with Aspect Ratio Expand: `patches/widescreen.c` takes a camera's
-  view to the window's edges and `patches/background.c` a board's background, through lib/mario-party-engine's
+  desktop too. It draws a picture wider than 4:3 with Aspect Ratio Expand: `patches/widescreen.c` takes a camera's view
+  to the window's edges and `patches/background.c` a board's background, through lib/mario-party-engine's
   `camera_view.c` and `board_back.c` (their headers say how), and keeps the sprites DispCheck would cull outside 4:3.
   `us.toml`'s hooks in the sprite manager draw the board's HUD, the players' panels, at the window's left and right
-  edges, and a picture as wide as the screen (Abandon Ship's sky) stretched over the window wherever the game puts it,
-  through lib/mario-party-engine's `src/hud.cpp`, and its hooks in the wipe module draw a wipe's colour (an
-  iris's black, a fade) to them too, through its `src/wipe.cpp`. Two hooks in `us.toml` keep the scissor the game's
-  text sets inside the picture. The board's camera stops where the wider picture reaches the map's edge
-  (`patches/background.c`, with the engine's `src/aspect_ratio.cpp`). A map no wider than 320 (Rules Land's START,
-  5x5 tiles) keeps black at its sides, the game having nothing beside it to draw, and its 3D and the HUD
-  keep inside 4:3 with it (`board_back.c`). So does a scene `patches/widescreen.c` lists as drawn at 4:3 (Crazy
-  Cutters and eight more minigames), black drawn over the window's sides at each frame's end (`us.toml`, the
-  engine's `src/wipe.cpp`).
+  edges, and a picture as wide as the screen (Abandon Ship's sky) stretched over the window wherever the game puts it
+  (kept to 4:3 in a scene the game draws at 4:3), through lib/mario-party-engine's `src/hud.cpp`, and its hooks in the
+  wipe module draw a wipe's colour (an iris's black, a fade) to them too, through its `src/wipe.cpp`. Two hooks in
+  `us.toml` keep the scissor the game's text sets inside the picture. The board's camera stops where the wider picture
+  reaches the map's edge (`patches/background.c`, with the engine's `src/aspect_ratio.cpp`). A map no wider than 320
+  (Rules Land's START, 5x5 tiles) keeps black at its sides, the game having nothing beside it to draw, and its 3D and
+  the HUD keep inside 4:3 with it (`board_back.c`). So does a scene `patches/widescreen.c` lists as drawn at 4:3 (Crazy
+  Cutters and fourteen more minigames), black drawn over the window's sides at each frame's end (`us.toml`, the engine's
+  `src/wipe.cpp`).
 - **Saves.** EEPROM, 4 Kbit. `main.cpp` declares `SaveType::Eep4k`; the runtime keeps it in `saves/`.
 - **Input.** RecompFrontend's default bindings. Keyboard: WASD the stick, Space A, Left Shift B, Q Z, R R, E L,
   Enter Start, the arrows the C buttons.
