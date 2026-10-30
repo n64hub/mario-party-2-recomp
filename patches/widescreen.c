@@ -122,9 +122,23 @@ RECOMP_PATCH s32 DispCheck(Vec2f* corners) {
 // frame (us.toml's hook at func_800286FC_292FC's gDPFullSync), and the camera's view and the HUD stay inside 4:3.
 // - 0x05, Give Me a Brake (Western Land's item minigame): its desert, the cacti and fence with it, is a picture of the
 //   screen's size, and the frame's white clear showed past it.
+// - 0x09, Bumper Balloon Cars: its arena, the sand and the fence and stands around it, is a 2D picture of the screen's
+//   size, and the cars that drive on the sand are 3D, kept to it as it is at 4:3. Stretched over a wide window, the
+//   sand went on far past where the cars turn back.
+// - 0x0A, Rakin' 'Em In: the ground around the 3D table, the dark pit it stands in and four empty stumps, is a 2D
+//   picture of the screen's size, the stumps behind the players' at 4:3. Stretched over a wide window, the pit was
+//   nearly three times the table's width and the empty stumps stood out at the window's sides.
+// - 0x17, Archerival: the counter, the bushes and the brick wall the targets stand behind are a 2D picture of the
+//   screen's size. Stretched over a wide window, only the wall's middle was drawn, blank grey boxes beside it, and the
+//   targets bunched over the middle.
+// - 0x1B, Balloon Burst: each team's platform and its gauges are in a 2D picture of the screen's size, and the
+//   players stand on it in 3D. Stretched over a wide window, the platforms moved out from under the players.
 // - 0x18, Toad Bandstand: a stage of the screen's size, and past 4:3 the leaves around Toad, seen close as he conducts.
 // - 0x1E, Cake Factory: its wall is a 2D picture of the screen's size, and its conveyor belts ran on past it.
 // - 0x1F, Dungeon Dash: two views side by side, each a team's, and their walls and lanterns past 4:3.
+// - 0x20, Magnet Carta: the coin room, the star floor the carts drive on and each team's scoreboard are a 2D picture of
+//   the screen's size, and a board's score is drawn on it apart. Stretched over a wide window, the boards stood empty
+//   at the window's sides, their scores still at 4:3's edges, and the floor went on past where the carts turn back.
 // - 0x21, Face Lift: four faces on a 2D picture of the screen's size, and the pieces they are made of past it.
 // - 0x23, Crazy Cutters: its picture is 80 tiles of 32x32, each a copy of the frame, which stay at 4:3, and its stage
 //   past 4:3, the logs and spiked bars, was drawn over the black.
@@ -133,7 +147,8 @@ RECOMP_PATCH s32 DispCheck(Vec2f* corners) {
 //   over white.
 // - 0x3A, Torpedo Targets: two views, one over the other, each a team's: the bottom one was widened past 4:3 and the
 //   top one not, its subs drawn past its sides into the black.
-static const u8 overlays_4x3[] = { 0x05, 0x18, 0x1E, 0x1F, 0x21, 0x23, 0x24, 0x2C, 0x3A };
+static const u8 overlays_4x3[] = { 0x05, 0x09, 0x0A, 0x17, 0x18, 0x1B, 0x1E, 0x1F, 0x20, 0x21, 0x23, 0x24,
+                                   0x2C, 0x3A };
 
 void widescreen_overlay(s32 overlay) {
     s32 picture_4x3 = FALSE;
