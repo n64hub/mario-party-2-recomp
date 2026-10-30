@@ -147,8 +147,11 @@ RECOMP_PATCH s32 DispCheck(Vec2f* corners) {
 //   over white.
 // - 0x3A, Torpedo Targets: two views, one over the other, each a team's: the bottom one was widened past 4:3 and the
 //   top one not, its subs drawn past its sides into the black.
+// - 0x3C, Deep Sea Salvage: the sky, the sea and the reef far off are a 2D picture of the screen's size, and the sea
+//   the players swim in, tinted, and its rocks are 3D that ends at 4:3's edges. Stretched over a wide window, the
+//   picture's sea went on past them beside the water's tinted box.
 static const u8 overlays_4x3[] = { 0x05, 0x09, 0x0A, 0x17, 0x18, 0x1B, 0x1E, 0x1F, 0x20, 0x21, 0x23, 0x24,
-                                   0x2C, 0x3A };
+                                   0x2C, 0x3A, 0x3C };
 
 void widescreen_overlay(s32 overlay) {
     s32 picture_4x3 = FALSE;
