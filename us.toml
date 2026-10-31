@@ -124,13 +124,19 @@ func = "func_8009110C_91D0C"
 before_vram = 0x8009199C
 text = "{ void mp_wipe_sides(uint8_t*, gpr); mp_wipe_sides(rdram, ctx->r8); }"
 
-# A 4:3 picture's sides black (lib/mario-party-engine/src/wipe.cpp, mp_wipe_picture_sides), then a scene's own rate
-# (patches/frame_rate.c, frame_rate_end): func_800286FC_292FC ends the frame's last display list after its wipe and its
-# text, the list's next command in v0, with its gDPFullSync. The game's registers are kept around frame_rate_end.
+# A 4:3 picture's sides black (lib/mario-party-engine/src/wipe.cpp, mp_wipe_picture_sides): func_800286FC_292FC ends
+# the frame's last display list after its wipe and its text, the list's next command in v0, with its gDPFullSync.
 [[patches.hook]]
 func = "func_800286FC_292FC"
 before_vram = 0x800292CC
-text = "{ gpr mp_wipe_picture_sides(uint8_t*, gpr); void frame_rate_end(uint8_t*, recomp_context*); ctx->r2 = mp_wipe_picture_sides(rdram, ctx->r2); recomp_context saved = *ctx; ctx->r4 = ctx->r2; frame_rate_end(rdram, ctx); gpr next = ctx->r2; *ctx = saved; ctx->r2 = next; }"
+text = "{ gpr mp_wipe_picture_sides(uint8_t*, gpr); ctx->r2 = mp_wipe_picture_sides(rdram, ctx->r2); }"
+
+# A scene drawn at the game's own rate (patches/frame_rate.c, frame_rate_task): func_8001D054_1DC54 sends each task to
+# the graphics thread, its display list ended. The game's registers are kept around the call.
+[[patches.hook]]
+func = "func_8001D054_1DC54"
+before_vram = 0x8001D054
+text = "{ void frame_rate_task(uint8_t*, recomp_context*); recomp_context saved = *ctx; frame_rate_task(rdram, ctx); *ctx = saved; }"
 
 # Bumper Balls' lava widened to a wide window's edges (patches/widescreen.c, widescreen_bumper_lava): the stage's frame
 # function, with the stage's object in s0, each frame. The game's registers are kept around the call.

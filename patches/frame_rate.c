@@ -12,16 +12,23 @@
 //   light's trailing edge as they ran.
 //
 // While one plays, RT64 is told the game's rate is OWN_RATE, above any display's, so it draws no frames between the
-// game's, as at Original. The game sends a frame as several display lists, a task each: the models' (one for each of
-// their microcode groups), each of which draws the camera's view (widescreen.c's func_800204C0_210C0 calls
-// frame_rate_view), and after them the 2D layers', which don't. RT64 takes the frame's rate from its last list, Lights
-// Out's darkness, sprites, wipe and text, so that list is told too (us.toml's hook at func_800286FC_292FC's
-// gDPFullSync calls frame_rate_end). RT64 forgets the rate, as all of its extended state, as each display list starts,
-// so it is told again each frame, and a frame after the scene's is drawn at the rate it reads from the VI. It reads
-// extended commands only after a gEXEnable in the same display list.
+// game's, as at Original. The game sends a frame as several display lists, a task each (its models' for each of their
+// microcode groups, its 2D layers' at each group change), and RT64 reads a frame's rate from the list a frame's present
+// follows, which in Mario Party 2's minigames is not always the frame's last. So each task is told: us.toml's hook at
+// func_8001D054_1DC54, which sends every task to the graphics thread, calls frame_rate_task, which writes the rate in
+// front of the list's gDPFullSync and gSPEndDisplayList, the last two commands at the frame's display list pointer
+// (D_800FDBCC_FE7CC). RT64 forgets the rate, as all of its extended state, as each display list starts, so a list
+// after the scene's is drawn at the rate it reads from the VI. It reads extended commands only after a gEXEnable in
+// the same display list.
 
 // Above the display rates RT64 interpolates to (its Framerate's target is at most 1000).
 #define OWN_RATE 1000
+
+// The commands a task's display list ends with: gDPFullSync and gSPEndDisplayList.
+#define FULL_SYNC 0xE9000000
+#define END_DISPLAY_LIST 0xDF000000
+
+extern Gfx* D_800FDBCC_FE7CC;
 
 static const u8 overlays_own_rate[] = { 0x15 };
 
@@ -38,15 +45,20 @@ void frame_rate_overlay(s32 overlay) {
     }
 }
 
-void frame_rate_view(Gfx** gfx) {
-    if (!own_rate) {
+void frame_rate_task(void) {
+    Gfx* gfx = D_800FDBCC_FE7CC;
+    Gfx sync;
+    Gfx end;
+
+    if (!own_rate || (gfx[-2].words.w0 != FULL_SYNC) || (gfx[-1].words.w0 != END_DISPLAY_LIST)) {
         return;
     }
-    gEXEnable((*gfx)++);
-    gEXSetRefreshRate((*gfx)++, OWN_RATE);
-}
-
-Gfx* frame_rate_end(Gfx* gfx) {
-    frame_rate_view(&gfx);
-    return gfx;
+    sync = gfx[-2];
+    end = gfx[-1];
+    gfx -= 2;
+    gEXEnable(gfx++);
+    gEXSetRefreshRate(gfx++, OWN_RATE);
+    *gfx++ = sync;
+    *gfx++ = end;
+    D_800FDBCC_FE7CC = gfx;
 }
