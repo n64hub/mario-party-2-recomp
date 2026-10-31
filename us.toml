@@ -115,3 +115,42 @@ text = "{ gpr mp_wipe_picture_sides(uint8_t*, gpr); ctx->r2 = mp_wipe_picture_si
 func = "func_80103430_211DD0_BumperBalls"
 before_vram = 0x80103494
 text = "{ void widescreen_bumper_lava(uint8_t*, recomp_context*); recomp_context saved = *ctx; ctx->r4 = ctx->r16; widescreen_bumper_lava(rdram, ctx); *ctx = saved; }"
+
+# Board Movement and Map Scrolling (lib/mario-party-engine/src/board_options.cpp), Original by default.
+# Fast board movement: func_80056E34_57A34(player, frames) takes a player to the next space in so many frames, 10 (a1)
+# for a walk from func_800650F0_65CF0 and board 0x4C's func_801034C8_326888_name_4C (15 is a jump): 5.
+[[patches.hook]]
+func = "func_80056E34_57A34"
+before_vram = 0x80056E34
+text = "{ int mp_board_movement_fast(void); if ((int32_t)ctx->r5 == 10 && mp_board_movement_fast()) ctx->r5 = 5; }"
+
+# Western Land's (0x3E) own moves at twice their speed, 4.0 for 2.0 (a3, to func_80056FD4_57BD4 and
+# func_80057150_57D50), and the ring of 12 frames its func_801069C8_29BC98_name_3E counts at 0x801138B0 made 6.
+[[patches.hook]]
+func = "func_80106FE0_29C2B0_name_3E"
+before_vram = 0x801071B8
+text = "{ int mp_board_movement_fast(void); if (mp_board_movement_fast()) ctx->r7 = 0x40800000; }"
+
+[[patches.hook]]
+func = "func_80106FE0_29C2B0_name_3E"
+before_vram = 0x801071D8
+text = "{ int mp_board_movement_fast(void); if (mp_board_movement_fast()) ctx->r7 = 0x40800000; }"
+
+[[patches.hook]]
+func = "func_801069C8_29BC98_name_3E"
+before_vram = 0x80106A5C
+text = "{ int mp_board_movement_fast(void); if (mp_board_movement_fast()) ctx->r3 = (int32_t)MEM_W(0x38B0, (gpr)(int32_t)0x80110000) < 6; }"
+
+# Space Land's (0x45) func_8011012C_2EE85C_name_45 at twice its speed (f20: 2.5, or 3.0 on its other path, both of
+# which reach 0x801101A4).
+[[patches.hook]]
+func = "func_8011012C_2EE85C_name_45"
+before_vram = 0x801101A4
+text = "{ int mp_board_movement_fast(void); if (mp_board_movement_fast()) ctx->f20.fl *= 2.0f; }"
+
+# Fast map scrolling: func_8006784C_6844C, the map's view, sets the board camera's speed (func_80053980_54580, f12) to
+# 3.5 as it starts, which the camera follows the stick's target at: twice that.
+[[patches.hook]]
+func = "func_8006784C_6844C"
+before_vram = 0x80067944
+text = "{ int mp_map_scrolling_fast(void); if (mp_map_scrolling_fast()) ctx->f12.fl *= 2.0f; }"
