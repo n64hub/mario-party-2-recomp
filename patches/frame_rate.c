@@ -11,11 +11,14 @@
 //   rectangles over the scene. The holes, the players' lights, led the players by up to a game frame, a player at a
 //   light's trailing edge as they ran.
 //
-// While one plays, each camera's view (widescreen.c's func_800204C0_210C0 calls frame_rate_view) tells RT64 the game's
-// rate is OWN_RATE, above any display's, so it draws no frames between the game's, as at Original. RT64 forgets the
-// rate, as all of its extended state, as each frame's display list starts, so it is told again each frame, and a frame
-// after the scene's is drawn at the rate it reads from the VI. It reads extended commands only after a gEXEnable in the
-// same display list.
+// While one plays, RT64 is told the game's rate is OWN_RATE, above any display's, so it draws no frames between the
+// game's, as at Original. The game sends a frame as several display lists, a task each: the models' (one for each of
+// their microcode groups), each of which draws the camera's view (widescreen.c's func_800204C0_210C0 calls
+// frame_rate_view), and after them the 2D layers', which don't. RT64 takes the frame's rate from its last list, Lights
+// Out's darkness, sprites, wipe and text, so that list is told too (us.toml's hook at func_800286FC_292FC's
+// gDPFullSync calls frame_rate_end). RT64 forgets the rate, as all of its extended state, as each display list starts,
+// so it is told again each frame, and a frame after the scene's is drawn at the rate it reads from the VI. It reads
+// extended commands only after a gEXEnable in the same display list.
 
 // Above the display rates RT64 interpolates to (its Framerate's target is at most 1000).
 #define OWN_RATE 1000
@@ -41,4 +44,9 @@ void frame_rate_view(Gfx** gfx) {
     }
     gEXEnable((*gfx)++);
     gEXSetRefreshRate((*gfx)++, OWN_RATE);
+}
+
+Gfx* frame_rate_end(Gfx* gfx) {
+    frame_rate_view(&gfx);
+    return gfx;
 }

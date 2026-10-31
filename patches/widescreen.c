@@ -139,6 +139,8 @@ RECOMP_PATCH s32 DispCheck(Vec2f* corners) {
 // - 0x17, Archerival: the counter, the bushes and the brick wall the targets stand behind are a 2D picture of the
 //   screen's size. Stretched over a wide window, only the wall's middle was drawn, blank grey boxes beside it, and the
 //   targets bunched over the middle.
+// - 0x19, Bobsled Run: two views, one over the other, each a team's: the bottom one was widened nearly to the window's
+//   edges and the top one not, its walls ending at 4:3 over the frame's clear, a dark blue.
 // - 0x1B, Balloon Burst: each team's platform and its gauges are in a 2D picture of the screen's size, and the
 //   players stand on it in 3D. Stretched over a wide window, the platforms moved out from under the players.
 // - 0x18, Toad Bandstand: a stage of the screen's size, and past 4:3 the leaves around Toad, seen close as he conducts.
@@ -165,8 +167,8 @@ RECOMP_PATCH s32 DispCheck(Vec2f* corners) {
 // - 0x70, a board's results after each minigame: the board dimmed behind the table is a map of the screen's size
 //   (func_801042D8_410738_Results), which the engine judges 4:3 by its edges each frame; it is 4:3 by its overlay too,
 //   so nothing the HUD aligns to the window's edges is drawn over the black at its sides in any frame.
-static const u8 overlays_4x3[] = { 0x05, 0x09, 0x0A, 0x0E, 0x11, 0x16, 0x17, 0x18, 0x1B, 0x1E, 0x1F, 0x20, 0x21,
-                                   0x23, 0x24, 0x2C, 0x2E, 0x38, 0x39, 0x3A, 0x3C, 0x70 };
+static const u8 overlays_4x3[] = { 0x05, 0x09, 0x0A, 0x0E, 0x11, 0x16, 0x17, 0x18, 0x19, 0x1B, 0x1E, 0x1F, 0x20,
+                                   0x21, 0x23, 0x24, 0x2C, 0x2E, 0x38, 0x39, 0x3A, 0x3C, 0x70 };
 
 // The minigames whose 3D ends short of a wide window's edges, and the widest each is drawn, its width over its height:
 // where its stage ends at its narrowest across the minigame's play, at a 32:9 window. The engine draws one to the
