@@ -138,6 +138,14 @@ func = "func_8001D054_1DC54"
 before_vram = 0x8001D054
 text = "{ void frame_rate_task(uint8_t*, recomp_context*); recomp_context saved = *ctx; frame_rate_task(rdram, ctx); *ctx = saved; }"
 
+# And the list the scheduler sends after each frame's last task (patches/frame_rate.c, frame_rate_list):
+# func_8007C254_7CE54 before it ends the list with gDPFullSync, the list's next command at a1. The game's registers are
+# kept around the call, a1 moved past what it writes.
+[[patches.hook]]
+func = "func_8007C254_7CE54"
+before_vram = 0x8007C320
+text = "{ void frame_rate_list(uint8_t*, recomp_context*); recomp_context saved = *ctx; gpr next; ctx->r4 = ctx->r5; frame_rate_list(rdram, ctx); next = ctx->r2; *ctx = saved; ctx->r5 = next; }"
+
 # Bumper Balls' lava widened to a wide window's edges (patches/widescreen.c, widescreen_bumper_lava): the stage's frame
 # function, with the stage's object in s0, each frame. The game's registers are kept around the call.
 [[patches.hook]]
