@@ -167,7 +167,7 @@ static const u8 overlays_4x3[] = { 0x05, 0x09, 0x0A, 0x11, 0x16, 0x17, 0x18, 0x1
 // - 0x02, Roll Out the Barrels: the side walls' outer edges, 2.1, past them the clear's teal.
 // - 0x25, Mecha-Marathon: the grass field's edges, 2.05 (its far corner, a wedge of black at the top left, shows at
 //   4:3 too).
-// - 0x2A, Bumper Balls: the lava's far edge, 1.65.
+// - 0x2A, Bumper Balls: the lava's far edge, 1.65, the lava widened past it as it plays (widescreen_bumper_lava).
 // - 0x2F, Skateboard Scamper: the start room's end wall, 1.8; the hall the players run fills a 32:9 window.
 // - 0x32, Sneak 'n' Snore: the outer wall's bottom edge, 1.45, past it the clear's grey.
 // - 0x3B, Destruction Duet: the cave's arch, 1.5.
@@ -195,4 +195,27 @@ void widescreen_overlay(s32 overlay) {
         }
     }
     board_back_scene_widest(widest);
+}
+
+// The seas of short_scenes that are widened in x so that they reach a wide window's edges (lib/mario-party-engine's
+// board_back_stage_widened, which moves the scene's widest out with them): a sea with nothing standing at its edges,
+// which reads the same wider. A room's walls, a stage built for 4:3 and a painted backdrop keep their cap.
+
+// The model instances (0xC0 bytes each), their scale at 0x34, which the object manager copies an object's onto only for
+// its first model.
+typedef struct {
+    u8 unk_00[0x34];
+    Vec scale;
+    u8 unk_40[0xC0 - 0x40];
+} ModelInstance;
+extern ModelInstance* D_800FC834_FD434;
+
+// Bumper Balls' lava (file 0x3A000C), the stage's second model, under the arena and as wide as its far edge at 1.65:
+// us.toml's hook calls this each frame from the stage's frame function, which scrolls the lava's textures and never
+// writes its scale. The lava is the first of the minigame's three arenas, which the game picks by a byte at
+// 0x800FA656 as it starts (func_80102800_2111A0_BumperBalls); the other two keep the cap: the snowy peak's mountains
+// are a backdrop, and the island's sea is a part inside one of its models that the game finds by name and rewrites
+// each frame, not a model of its own to scale.
+void widescreen_bumper_lava(omObjData* stage) {
+    D_800FC834_FD434[stage->model[1]].scale.x = board_back_stage_widened(1.65f);
 }
