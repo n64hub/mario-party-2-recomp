@@ -84,6 +84,28 @@ func = "SprDisp"
 before_vram = 0x800858E8
 text = "{ void mp_hud_sprite_end(uint8_t*, gpr); mp_hud_sprite_end(rdram, ctx->r21); }"
 
+# The item a player uses carried out of their panel by their character's hand (hud.cpp, mp_hud_item_at and
+# mp_hud_hand_read). func_800629AC_635AC(player, x, y) moves the item, member 2 of the panel's group, whose place is
+# the floats at 0x48 of its sprite (SprPosSet's). Each board reads the hand's picture with DataRead(file), file 0x86
+# plus the character (a byte at 0x800FD2C4, 0x34 bytes a player), and gives it to the hand's group next, with
+# SprAnimSet(group, ...): only the hand of the player whose turn it is (a s16 at 0x800F93C6), whose item it is, is the
+# panel's. A board's events at another player's panel read that player's hand, drawn with sprites of their own, and it
+# stays as it is.
+[[patches.hook]]
+func = "func_800629AC_635AC"
+before_vram = 0x800629AC
+text = "{ void mp_hud_item_at(uint8_t*, int32_t, gpr, gpr); int32_t p = (int32_t)ctx->r4; if (p >= 0 && p < 4) { int16_t g = MEM_H(0x8, (gpr)(int32_t)0x80101510 + p * 0x48); gpr group = (gpr)(int32_t)MEM_W(g * 4, (gpr)(int32_t)0x800FA1B0); gpr s = (gpr)(int32_t)MEM_W(0xC + 2 * 4, group); mp_hud_item_at(rdram, p, s, s + 0x48); } }"
+
+[[patches.hook]]
+func = "DataRead"
+before_vram = 0x80017680
+text = "{ void mp_hud_hand_read(uint8_t*, int32_t); uint32_t file = (uint32_t)ctx->r4; int16_t p = MEM_H(0, (gpr)(int32_t)0x800F93C6); if (file >= 0x86 && file <= 0x8B && p >= 0 && p < 4 && MEM_BU(p * 0x34, (gpr)(int32_t)0x800FD2C4) == file - 0x86) mp_hud_hand_read(rdram, p); }"
+
+[[patches.hook]]
+func = "SprAnimSet"
+before_vram = 0x8008218C
+text = "{ void mp_hud_hand_group(uint8_t*, gpr); mp_hud_hand_group(rdram, (gpr)(int32_t)MEM_W((int16_t)ctx->r4 * 4, (gpr)(int32_t)0x800FA1B0)); }"
+
 # A screen wipe past 4:3 (lib/mario-party-engine/src/wipe.cpp says how): the wipe module's whole-screen rectangle
 # (func_8008F7F4_903F4(gfx, alpha), out through 0x8008F8C0), and a shape wipe's rectangles around its square
 # (func_8009110C_91D0C, with gfx in t0, from 0x8009199C, where it has set their colour).
