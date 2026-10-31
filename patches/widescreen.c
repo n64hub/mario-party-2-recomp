@@ -163,9 +163,8 @@ RECOMP_PATCH s32 DispCheck(Vec2f* corners) {
 //   the players swim in, tinted, and its rocks are 3D that ends at 4:3's edges. Stretched over a wide window, the
 //   picture's sea went on past them beside the water's tinted box.
 // - 0x70, a board's results after each minigame: the board dimmed behind the table is a map of the screen's size
-//   (func_801042D8_410738_Results), which the engine judges 4:3 by its edges each frame. Left over from the board,
-//   the 3D's sub-pixel viewport and its zoom could put the map's edge past that test's half pixel, and the frame was
-//   drawn wide, the HUD and sprites past 4:3 over the black at its sides.
+//   (func_801042D8_410738_Results), which the engine judges 4:3 by its edges each frame; it is 4:3 by its overlay too,
+//   so nothing the HUD aligns to the window's edges is drawn over the black at its sides in any frame.
 static const u8 overlays_4x3[] = { 0x05, 0x09, 0x0A, 0x0E, 0x11, 0x16, 0x17, 0x18, 0x1B, 0x1E, 0x1F, 0x20, 0x21,
                                    0x23, 0x24, 0x2C, 0x2E, 0x38, 0x39, 0x3A, 0x3C, 0x70 };
 
