@@ -20,7 +20,8 @@
   "which go back to Rules Land: the board's results (0x70), where some minigames end, read a board the trip",
   "never loaded. A plays them to their ends. Not recorded: the six duels, which pick among their board's spaces and so",
   "play only from a board's own duel, Mini-Game Land, the Mini-Game Coaster, a party's setup, a board's ending and the",
-  "options. Two shaders plays missed, one in the opening and one on Western Land, are added to section 0 by hand. Flags",
+  "options. Six shaders plays missed, one in the opening, one on Western Land, two of a board's background drawn as",
+  "quads (patches/background.c) and two the play plan draws on its way to a board, are added to section 0 by hand. Flags",
   "follow settings (filtering, HDR, MSAA, upscaling), so a change to one of those defaults means recording again."
  ],
  "load": [
