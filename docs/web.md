@@ -7,12 +7,12 @@ through WebGPU. The page is built from your ROM like the desktop program, so it 
 published with the game in it.
 
 What is the game's own stays here: the `EMSCRIPTEN` branches of `CMakeLists.txt` that make the game a page,
-`tools/build_web.sh`, the shader list (`src/rt64_shaders.txt`, `tools/shader_plan.json`, `tools/record_shaders.sh`),
-the play plan (`tools/play_plan.json`) and the survey (`patches/survey.c`, `src/game/survey.cpp`, `tools/survey.js`).
-The rest is N64Recomp-browser's: `docs/porting.md`
-(WebGPU and the shaders, prebuilt shader lists, Emscripten), `docs/playing.md` (playing and measuring a page),
-`docs/forks.md` and `docs/findings.md`. Every play of this game's page is a line in N64Recomp-browser's `plays.jsonl`
-(game `mp2`), never a record here.
+`tools/build_web.sh`, the shader list (`src/rt64_shaders.txt`, `tools/shader_plan.json`, `tools/record_shaders.sh`), the
+play plans (`tools/play_plan.json`, `tools/play_plan_pads.json`) and the survey (`patches/survey.c`,
+`src/game/survey.cpp`, `tools/survey.js`). The rest is N64Recomp-browser's: `docs/porting.md` (WebGPU and the shaders,
+prebuilt shader lists, Emscripten), `docs/playing.md` (playing and measuring a page), `docs/forks.md` and
+`docs/findings.md`. Every play of this game's page is a line in N64Recomp-browser's `plays.jsonl` (game `mp2`), never a
+record here.
 
 The engine's process scheduler runs on threads on the page as on the desktop (`docs/processes.md`): the page has
 threads and C++ exceptions anyway, so it needs no Asyncify.
@@ -71,3 +71,8 @@ Western Land, where four computer players play with the board engine. Which scre
 0x4D and its board 0x4C, the six boards 0x3E (Western Land), 0x41, 0x43, 0x45, 0x47 and 0x49 (Bowser Land), their
 duels 0x3F to 0x4A between them, the minigames 0x01 to 0x3C, a minigame's explanation 0x5F or 0x60 and its results
 0x6F.
+
+`tools/play_plan_pads.json` plays it with two stand-in pads of one model (N64Recomp-browser's
+`tools/gamepad_probe.js`, item 3 of its `docs/new-recomp.md`): each pad plays a port of its own, the game offers a
+player for each, and the rumble of the port a pad plays reaches that pad, since `src/main/main.cpp` puts a Rumble Pak
+in each port with a controller (with none the game never rumbles). Its header says what it reads for each.
