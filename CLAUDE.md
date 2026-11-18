@@ -75,7 +75,9 @@ This repo is the game: its recompilation, the patches over it, the desktop build
   GwSystem's chosenMinigameIndex; the board code reads GwSystem's current_board_index for its own tables.
 -  **Drawing.** RT64 interpolates the game's frames to the display's rate. The game's display lists have no tags of
   their own: `us.toml`'s hooks in the model walk and the draw of its queue tag each 3D model's parts with an ID of their
-  own, through lib/mario-party-engine's `src/model_ids.cpp`, and RT64 pairs whatever else the game draws by itself. The
+  own, through lib/mario-party-engine's `src/model_ids.cpp`, and RT64 pairs whatever else the game draws by itself.
+  `patches/widescreen.c` hands it each camera's view as it sets the camera up (`mp_model_camera`, in `patches/syms.ld`),
+  so a cut to another shot (the opening's warp pipe room) isn't interpolated. The
   game draws a frame in several RSP tasks, one a camera (`func_800204C0_210C0`), which RT64 interpolates as one game
   frame with RT64_GAME_FRAME_WORKLOADS, on with Emscripten and in `CMakeLists.txt` on the desktop too. It draws a
   picture wider than 4:3 with Aspect Ratio Expand: `patches/widescreen.c` takes a camera's view to the window's edges
