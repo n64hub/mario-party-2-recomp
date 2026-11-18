@@ -1,0 +1,28 @@
+# The load run of the save check (N64Recomp-browser's tools/frame_dump.mjs --saves), after tools/save_plan.txt, the
+# program started again in the same folder: the game reads its EEPROM at boot, before the logos, so by the title
+# (0x62) the save's marker (5, the top byte of 0x800F8C60) is in and flag 2 is clear (Mono), which a boot without that
+# save never has (the flags byte 0x800F8CD8 is 0x04 there). Nothing is written by the time Toad asks his question
+# again. Then the laboratory's Sound is set back to Stereo the same way and the laboratory left, which saves again,
+# through the check's links.
+0 until 0x800FA63C 0xFFFFFFFF 0x62 60
+0.5 until 0x800F8C60 0xFF000000 0x05000000 1
+1 until 0x800F8CD8 0x04000000 0x00000000 1
+1.5 until 0x800FA63C 0xFFFFFFFF 0x5B 120 Enter
+2 until 0x80113A18 0xFFFF0000 0x00020000 30 Space
+2.5 until [0x800F920C]+0x518 0xFF000000 0x05000000 60 Space
+3 shot question
+3.5 saves same
+4 key L 100
+4.5 until [0x800F920C]+0x528 0x00FF0000 0x00010000 5
+5 key Space 100
+6.5 until 0x801148A4 0xFFFF0000 0x00060000 10 D
+7.5 key Space 100
+8.5 until 0x801148A4 0xFFFF0000 0xFFFF0000 30
+9.5 until 0x801148A4 0xFFFF0000 0x00030000 20 D
+10.5 until 0x800F8CD8 0x04000000 0x04000000 10 Space
+11.5 shot stereo
+12.5 until 0x801148A4 0xFFFF0000 0x00040000 20 A
+13.5 until 0x800D8A70 0xFF000000 0x04000000 20 Space
+14.5 saves changed 15
+15.5 shot land
+16 end

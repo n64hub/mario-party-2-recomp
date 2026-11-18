@@ -1,0 +1,26 @@
+# The save run of the save check (N64Recomp-browser's tools/frame_dump.mjs --saves, with tools/load_plan.txt): Start
+# through the opening on a new save into Mario Land (the screen, omOvlGotoEx's last overlay at 0x800FA63C, 0x5B), A
+# through Toad's welcome to his question (Hear about the rules?, waiting while byte 0x20 of his window, the halfword at
+# 0x80113A18 its id and the table at 0x800F920C, is 5) and No (the d-pad right, A). Then the stick right to the Option
+# Laboratory (the menu's cursor, the halfword at 0x801148A4, 6) and A; in it, the stick right to Sound (3), A and A to
+# set Mono, which clears flag 2 (the 0x04 of the flags byte 0x800F8CD8), the stick left to Exit (4), A and A, and the
+# game saves as the laboratory is left (func_8007DF5C), the flags then in its copy of the EEPROM (0x800D8A70). A blank
+# EEPROM is written with the defaults at boot, so saves/ has changed by then all the same: the load run's check is
+# what tells the save.
+0 until 0x800FA63C 0xFFFFFFFF 0x5B 120 Enter
+0.5 until 0x80113A18 0xFFFF0000 0x00020000 30 Space
+1 until [0x800F920C]+0x518 0xFF000000 0x05000000 60 Space
+1.5 key L 100
+2 until [0x800F920C]+0x528 0x00FF0000 0x00010000 5
+2.5 key Space 100
+4 until 0x801148A4 0xFFFF0000 0x00060000 10 D
+5 key Space 100
+6 until 0x801148A4 0xFFFF0000 0xFFFF0000 30
+7 until 0x801148A4 0xFFFF0000 0x00030000 20 D
+8 until 0x800F8CD8 0x04000000 0x00000000 10 Space
+9 shot mono
+10 until 0x801148A4 0xFFFF0000 0x00040000 20 A
+11 until 0x800D8A70 0xFF000000 0x00000000 20 Space
+12 saves changed 15
+13 shot land
+14 end
