@@ -1,0 +1,39 @@
+# Mario Party 2's soak plan: one round, 300 s with the boot, of N64Recomp-browser's
+# tools/frame_dump.mjs --soak 300 on the Linux build, through tools/remote_frame_dump.sh as a `soak` job:
+#   tools/remote_frame_dump.sh <game dir> MarioParty2Recompiled marioparty2.n64.us.1.0 <rom> tools/soak_plan.txt <out> --soak 300
+# It fails on a Crash: line, the program exiting, or the picture standing still for 10 s. A round plays a new save:
+# Start (Enter) through the logos, the opening and the title into Mario Land, A (Space) through Toad's greeting until
+# his hand points at Rules Land, the stick left (A) onto Pirate Land, A through the party's setup (one player and three
+# computer players) and the board's opening, Pirate Land's first turns (A rolls player 1's dice), the minigame's
+# explanation, Start until the game is in the minigame, the minigame on random input (A and the stick), and the board
+# again until the time is up: the board from about 135 s, the minigame from about 195 s. Start is pressed 55 s after
+# the board comes up, when its four turns are done (40 s in each play), since A doesn't leave the explanation and Start
+# is kept off the board. Rules Land and its board, Mini-Game Park and the other lands aren't in the round. Which
+# screen is up is the overlay omOvlGotoEx last went to, a word at 0x800FA63C: Mario Land 0x5B, the setup 0x58, the
+# board's opening 0x55, Pirate Land 0x41, a minigame's explanation 0x5F or 0x60, the minigames 0x01 to 0x3C (0x40 clear,
+# which the until on the minigame reads), the ranking after them 0x3D. Toad's hand shows only once the greeting's text is
+# done, so the stick waits for it: pressed earlier, it is lost and A picks Rules Land.
+15 until 0x800FA63C 0xFFFFFFFF 0x5B 100 Enter
+16 shot mario_land
+18 key Space
+20 key Space
+22 key Space
+24 key a
+26 key a
+27 shot pirate_land
+28 until 0x800FA63C 0xFFFFFFFF 0x58 20 Space
+29 random Space
+60 peek 0x800FA63C
+90 peek 0x800FA63C
+110 until 0x800FA63C 0xFFFFFFFF 0x41 60 Space
+111 shot board
+165 shot explanation
+165 until 0x800FA63C 0x40 0x0 40 Enter
+166 shot minigame
+166 random Space,w,a,s,d
+180 peek 0x800FA63C
+195 shot after_minigame
+195 peek 0x800FA63C
+210 peek 0x800FA63C
+225 peek 0x800FA63C
+240 peek 0x800FA63C
