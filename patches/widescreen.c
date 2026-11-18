@@ -49,6 +49,7 @@ _Static_assert(__builtin_offsetof(Camera, scissor) == 0x98, "Camera's scissor");
 _Static_assert(sizeof(Camera) == 0x2B8, "Camera's size");
 
 extern Camera* D_800C9B80_CA780;
+void mp_model_camera(s32 camera, Mtx* view, Mtx* projection);
 // The frame being built, of FRAMES.
 extern s16 D_800FFFD6_100BD6;
 
@@ -79,6 +80,8 @@ RECOMP_PATCH void func_800204C0_210C0(s16 index, Gfx** gfx) {
     // @recomp A widened camera's viewport in the middle, what it was moved by in its projection.
     camera_view_projection(gfx, index, viewport, camera->persp_norm, &matrices->projection, widened(camera));
     gSPMatrix((*gfx)++, (u32)&matrices->modelview + 0x80000000, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+    // @recomp A cut of the camera to another shot, its models not interpolated across it.
+    mp_model_camera(index, &matrices->modelview, &matrices->projection);
 }
 
 RECOMP_PATCH void func_8002064C_2124C(s16 index, Gfx** gfx) {
