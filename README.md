@@ -67,6 +67,13 @@ archives into `out/` from the same commit of `main`, `boot windows` and `boot li
 player first runs it, and `publish` publishes them as the GitHub release `v<version_string>` (`src/main/main.cpp`)
 with `releases/v<version>.md` as its notes, `--prerelease` marking it a prerelease (the script's header says more).
 
+The save is checked by machine on the Linux build, with N64Recomp-browser's `tools/remote_frame_dump.sh <build>
+MarioParty2Recompiled marioparty2.n64.us.1.0 <rom> tools/save_plan.txt <out> --saves tools/load_plan.txt`:
+`tools/save_plan.txt` sets the sound to Mono in the Option Laboratory, which the game saves as the laboratory is
+left, then the program is restarted in the same folder with `saves/` and its file behind symlinks, and
+`tools/load_plan.txt` finds the setting read back by the title, the file untouched until Toad's question in Mario
+Land, and Stereo saved again through the links.
+
 ## Controls
 
 A gamepad, or the keyboard.
