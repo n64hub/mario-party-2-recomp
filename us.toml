@@ -224,3 +224,20 @@ text = "{ gpr mp_model_push(uint8_t*, gpr, int32_t, gpr, int32_t, gpr, int32_t);
 func = "func_800322BC_32EBC"
 before_vram = 0x800327C4
 text = "{ void mp_model_pop(uint8_t*, gpr); mp_model_pop(rdram, (gpr)(int32_t)0x800FDBCC); }"
+
+# Mini-Game Land's way out of its hub (its overlay, 0x5C), to Woody's shop and the other islands: it fades the music
+# out over 30 frames (func_800794A8_7A0A8(30), which sets bit 0x8 of the u16 at 0x800CD526) and waits for it in a loop
+# that never sleeps, polling the sequence player with func_80079920_7A520 until the audio thread clears that bit. On a
+# console the audio thread preempts the loop. Here the game's threads take turns, so the audio thread never ran again
+# and the game stopped on a black screen. Each turn of the two loops (0x80103114 in func_80102B78_390A38_name_5C,
+# 0x8010E36C in func_8010E318_39C1D8_name_5C) sleeps a frame while the bit is set, as the loop before the second one
+# does for its wipe.
+[[patches.hook]]
+func = "func_80102B78_390A38_name_5C"
+before_vram = 0x8010311C
+text = "if (MEM_HU(0, (gpr)(int32_t)0x800CD526) & 0x8) HuPrcVSleep(rdram, ctx);"
+
+[[patches.hook]]
+func = "func_8010E318_39C1D8_name_5C"
+before_vram = 0x8010E374
+text = "if (MEM_HU(0, (gpr)(int32_t)0x800CD526) & 0x8) HuPrcVSleep(rdram, ctx);"
