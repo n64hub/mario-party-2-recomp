@@ -225,6 +225,22 @@ func = "func_800322BC_32EBC"
 before_vram = 0x800327C4
 text = "{ void mp_model_pop(uint8_t*, gpr); mp_model_pop(rdram, (gpr)(int32_t)0x800FDBCC); }"
 
+# A 3D model's texture clamped where its triangles' part of it ends (lib/mario-party-engine/src/model_tiles.cpp says
+# why: a texture that is a sheet of pictures stacked one under another showed a thin line of the picture under a
+# model's under it, above the console's resolution). func_80033288_33E88 writes a batch of a model part's triangles as
+# the model is made, after the texture they are drawn with if it is another: at its start and before its last store
+# (0x80035BF0, the batch's first vertex, a s16 at 0x800FA1A6, not yet one past its last, at 0x800FA61C). It writes at
+# the Gfx* at 0x800FDBCC, the part's Vtx are at the pointer at 0x80101170, and the texture its tile holds at 0x800FC888.
+[[patches.hook]]
+func = "func_80033288_33E88"
+before_vram = 0x80033288
+text = "{ void mp_model_batch_start(uint8_t*, gpr, gpr); mp_model_batch_start(rdram, (gpr)(int32_t)0x800FDBCC, (gpr)(int32_t)0x800FC888); }"
+
+[[patches.hook]]
+func = "func_80033288_33E88"
+before_vram = 0x80035BF0
+text = "{ void mp_model_batch_end(uint8_t*, gpr, gpr, gpr, gpr, gpr); mp_model_batch_end(rdram, (gpr)(int32_t)0x800FDBCC, (gpr)(int32_t)0x80101170, (gpr)(int32_t)0x800FA1A6, (gpr)(int32_t)0x800FA61C, (gpr)(int32_t)0x800FC888); }"
+
 # Mini-Game Land's way out of its hub (its overlay, 0x5C), to Woody's shop and the other islands: it fades the music
 # out over 30 frames (func_800794A8_7A0A8(30), which sets bit 0x8 of the u16 at 0x800CD526) and waits for it in a loop
 # that never sleeps, polling the sequence player with func_80079920_7A520 until the audio thread clears that bit. On a
