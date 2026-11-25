@@ -124,14 +124,6 @@ func = "func_8009110C_91D0C"
 before_vram = 0x8009199C
 text = "{ void mp_wipe_sides(uint8_t*, gpr); mp_wipe_sides(rdram, ctx->r8); }"
 
-# A see-through rectangle as wide as the screen past 4:3 (lib/mario-party-engine/src/wipe.cpp, mp_wipe_screen_rect):
-# func_8007CA0C_7D60C draws the table of up to four rectangles at D_800F8FE8_F9BE8 (the opening theater's dimming round
-# its spotlight), each ending at 0x8007CCC8 once it has written its fill rectangle, the list's next command in t0.
-[[patches.hook]]
-func = "func_8007CA0C_7D60C"
-before_vram = 0x8007CCC8
-text = "{ gpr mp_wipe_screen_rect(uint8_t*, gpr); ctx->r8 = mp_wipe_screen_rect(rdram, ctx->r8); }"
-
 # A 4:3 picture's sides black (lib/mario-party-engine/src/wipe.cpp, mp_wipe_picture_sides): func_800286FC_292FC ends
 # the frame's last display list after its wipe and its text, the list's next command in v0, with its gDPFullSync.
 [[patches.hook]]
