@@ -21,7 +21,9 @@
 // Some of what the game draws in 2D, its sprites (SprDisp), it draws only where DispCheck finds them on the screen: a
 // corner of the sprite's quad (SprDispCheck's, in screen pixels) inside 320x240, or an edge across it. DispCheck here
 // keeps a sprite whose quad's bounds reach a screen half as wide again at each side (x from -160 to 480: a picture up
-// to 8:3, wider than 21:9); a sprite past 4:3's sides is drawn only where the window is wider than 4:3. A board's
+// to 8:3, wider than 21:9), and on the right as far again (to 640) for one the engine's src/hud.cpp has moved right
+// by as far as the window reaches past 4:3 (us.toml's SprDisp hook, for PutSprite, which cuts a texture rectangle off
+// at x 0); a sprite past 4:3's sides is drawn only where the window is wider than 4:3. A board's
 // ground is no sprite but its background's tiles (background.c).
 
 #include "patches.h"
@@ -34,7 +36,7 @@
 #define OVERSCAN 8
 #define SCREEN_HEIGHT 240
 #define WIDE_LEFT -160.0f
-#define WIDE_RIGHT 480.0f
+#define WIDE_RIGHT 640.0f
 // The depth buffer, where the game points the RDP's depth image every time it sets it (func_800295D4_2A1D4).
 #define DEPTH_IMAGE 0x003D0800
 // The frames in flight, each with its own viewport and matrices in a camera.

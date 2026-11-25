@@ -58,7 +58,9 @@ text = "ctx->r2 = 0x005003C0;"
 # (SprKill(group), and the sprite manager's init, func_8007F630_80230, which forgets them all; the groups' addresses
 # are at 0x800FA1B0) and each sprite drawn (SprDisp(gfx, sprite), every path out of it through 0x800858E8 with gfx in
 # s5), with its width on the screen: its frame's width (a u16 at 0x4 of its frame, 12 bytes each, from the frames its
-# data at 0x84 points to, by its frame's index at 0x90) by its x scale (a float at 0x18), as SprDisp reads them.
+# data at 0x84 points to, by its frame's index at 0x90) by its x scale (a float at 0x18), as SprDisp reads them; and
+# its x (a float at 0x4) and whether its PutSprite draws it as texture rectangles, which it cuts off at x 0 (none of
+# the sprite's flags at 0x24 for a matrix, 0x40000000, which SprDisp copies to 0x800ED6A0 for PutSprite to read).
 [[patches.hook]]
 func = "func_800600F8_60CF8"
 before_vram = 0x800600F8
@@ -77,7 +79,7 @@ text = "{ void mp_hud_reset(uint8_t*); mp_hud_reset(rdram); }"
 [[patches.hook]]
 func = "SprDisp"
 before_vram = 0x800849D4
-text = "{ void mp_hud_sprite_width(uint8_t*, float); void mp_hud_sprite_start(uint8_t*, gpr, gpr); gpr s = ctx->r5; gpr data = (gpr)(int32_t)MEM_W(0x84, s); if (data != 0) { gpr frame = (gpr)(int32_t)MEM_W(0x0, data) + MEM_H(0x90, s) * 12; union { uint32_t u; float f; } scale; scale.u = (uint32_t)MEM_W(0x18, s); mp_hud_sprite_width(rdram, MEM_HU(0x4, frame) * scale.f); } mp_hud_sprite_start(rdram, ctx->r4, ctx->r5); }"
+text = "{ void mp_hud_sprite_width(uint8_t*, float); void mp_hud_sprite_start(uint8_t*, gpr, gpr); gpr s = ctx->r5; gpr data = (gpr)(int32_t)MEM_W(0x84, s); if (data != 0) { gpr frame = (gpr)(int32_t)MEM_W(0x0, data) + MEM_H(0x90, s) * 12; union { uint32_t u; float f; } scale; scale.u = (uint32_t)MEM_W(0x18, s); mp_hud_sprite_width(rdram, MEM_HU(0x4, frame) * scale.f); } mp_hud_sprite_start(rdram, ctx->r4, ctx->r5); void mp_hud_sprite_reach_float(uint8_t*, gpr, gpr, int32_t); mp_hud_sprite_reach_float(rdram, ctx->r4, s + 4, ((uint32_t)MEM_W(0x24, s) & 0x40000000) == 0); }"
 
 [[patches.hook]]
 func = "SprDisp"
