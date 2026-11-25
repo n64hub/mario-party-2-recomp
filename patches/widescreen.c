@@ -8,7 +8,7 @@
 // A camera keeps its scissor as four floats, which the game writes in 10.2 fixed point, and camera_view.c takes whole
 // pixels. A camera whose scissor's sides are whole pixels, the whole screen's or the border's, is widened, its top and
 // bottom to the pixel at or above the game's where they have a part of one; any other keeps the game's scissor as it
-// writes it, and one of a split screen's views, half the screen's width or less, starts a pass of RT64's own
+// writes it, and, but for a cut of nearly the whole screen's width (OVERSCAN), starts a pass of RT64's own
 // (new_pass). RT64 widens a 3D view with the window only where it spans the width of all that the pass it is drawn in
 // draws, and the frame's first pass holds the clear of the whole screen to the background's colour
 // (func_800295D4_2A1D4, after the depth buffer's): the first camera's first models, drawn in it, were fitted to 4:3
@@ -16,7 +16,7 @@
 // cameras, drew its floor and sky three quarters as wide as the quarter, at its right side, with black at its left
 // where the fence, drawn in a later pass, went on across. The other quarters, and the first one's later models, were
 // each in a pass of their own already. A scene drawn at 4:3 (board_back.c) starts none, so its 3D stays inside 4:3,
-// and nor does a wider cut, such as overlay 0x48's 8 pixels inside the screen (camera_view.c), kept at 4:3 as before.
+// and nor does overlay 0x48's camera, 8 pixels inside the screen at each side, which camera_view.c keeps at 4:3.
 //
 // Some of what the game draws in 2D, its sprites (SprDisp), it draws only where DispCheck finds them on the screen: a
 // corner of the sprite's quad (SprDispCheck's, in screen pixels) inside 320x240, or an edge across it. DispCheck here
@@ -29,6 +29,9 @@
 #include "../lib/mario-party-engine/patches/board_back.h"
 
 #define SCREEN_WIDTH 320
+// A scissor at least this close to both of the screen's sides, in pixels: a cut of the whole screen, not one view of
+// several.
+#define OVERSCAN 8
 #define SCREEN_HEIGHT 240
 #define WIDE_LEFT -160.0f
 #define WIDE_RIGHT 480.0f
@@ -116,8 +119,8 @@ RECOMP_PATCH void func_8002064C_2124C(s16 index, Gfx** gfx) {
         return;
     }
 
-    // @recomp A split screen's view widened as its own, not fitted to 4:3 with what the frame drew before it.
-    if (!board_back_4x3() && (right - left <= (SCREEN_WIDTH / 2) * 4)) {
+    // @recomp Its 3D widened as its own, not fitted to 4:3 with what the frame drew before it.
+    if (!board_back_4x3() && (left > OVERSCAN * 4 || right < (SCREEN_WIDTH - OVERSCAN) * 4)) {
         new_pass(gfx);
     }
     gDPSetScissorFrac((*gfx)++, G_SC_NON_INTERLACE, left, top, right, bottom);
