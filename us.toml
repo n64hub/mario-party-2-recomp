@@ -124,19 +124,16 @@ func = "func_8009110C_91D0C"
 before_vram = 0x8009199C
 text = "{ void mp_wipe_sides(uint8_t*, gpr); mp_wipe_sides(rdram, ctx->r8); }"
 
-# The opening theater's see-through rectangle of the whole screen past 4:3, as the wipe's whole-screen rectangle
-# above: func_801037D0_3D5CF0_TitleScreenAndIntro(gfx) draws it from 0 to 320 in a colour the opening sets, under the
-# characters in the spotlight, to dim the stage round them; its rectangle goes at 0x80103880, and it returns through
-# 0x80103898. Kept to 4:3, the stage past it stayed bright, with a seam at 4:3's edges.
+# The opening theater's spotlights past 4:3: func_80103BF0_3D6110_TitleScreenAndIntro(gfx, in s1) dims the stage round
+# the characters in the spotlight with a mask the CPU draws the spotlights into (255 where it is dimmed), in 32x32
+# pieces stretched over 0 to 320 under a 4:3 scissor, in the colour at D_80112060 with that colour's alpha times the
+# mask's. So nothing dimmed the stage past 4:3, which stayed bright with a seam at 4:3's edges. Its colour and combine
+# are set at 0x80103E14: there the sides past 4:3 (mp_wipe_sides) are drawn in that colour and alpha, as the mask is
+# where it is 255, and the game's combine is put back for its pieces.
 [[patches.hook]]
-func = "func_801037D0_3D5CF0_TitleScreenAndIntro"
-before_vram = 0x80103880
-text = "{ void mp_wipe_fill_start(uint8_t*, gpr); mp_wipe_fill_start(rdram, ctx->r4); }"
-
-[[patches.hook]]
-func = "func_801037D0_3D5CF0_TitleScreenAndIntro"
-before_vram = 0x80103898
-text = "{ void mp_wipe_fill_end(uint8_t*, gpr); mp_wipe_fill_end(rdram, ctx->r4); }"
+func = "func_80103BF0_3D6110_TitleScreenAndIntro"
+before_vram = 0x80103E14
+text = "{ void mp_wipe_sides(uint8_t*, gpr); gpr g = MEM_W(0, ctx->r17); MEM_W(0, g) = (int32_t)0xFCFFFFFF; MEM_W(4, g) = (int32_t)0xFFFDF6FB; MEM_W(0, ctx->r17) = (int32_t)(g + 8); mp_wipe_sides(rdram, ctx->r17); g = MEM_W(0, ctx->r17); MEM_W(0, g) = (int32_t)0xFCFFB3FF; MEM_W(4, g) = (int32_t)0xFF65FEFF; MEM_W(0, ctx->r17) = (int32_t)(g + 8); }"
 
 # A 4:3 picture's sides black (lib/mario-party-engine/src/wipe.cpp, mp_wipe_picture_sides): func_800286FC_292FC ends
 # the frame's last display list after its wipe and its text, the list's next command in v0, with its gDPFullSync.
