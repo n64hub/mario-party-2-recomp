@@ -8,7 +8,13 @@
 // A camera keeps its scissor as four floats, which the game writes in 10.2 fixed point, and camera_view.c takes whole
 // pixels. A camera whose scissor's sides are whole pixels, the whole screen's or the border's, is widened, its top and
 // bottom to the pixel at or above the game's where they have a part of one; any other keeps the game's scissor as it
-// writes it.
+// writes it, and starts a pass of RT64's own (new_pass). RT64 widens a 3D view with the window only where it spans the
+// width of all that the pass it is drawn in draws, and the frame's first pass holds the clear of the whole screen to the
+// background's colour (func_800295D4_2A1D4, after the depth buffer's): the first camera's first models, drawn in it,
+// were fitted to 4:3 under a scissor widened with the rest. Shell Shocked's top-left quarter, the first of its four
+// cameras, drew its floor and sky three quarters as wide as the quarter, at its right side, with black at its left
+// where the fence, drawn in a later pass, went on across. The other quarters, and the first one's later models, were
+// each in a pass of their own already. A scene drawn at 4:3 (board_back.c) starts none, so its 3D stays inside 4:3.
 //
 // Some of what the game draws in 2D, its sprites (SprDisp), it draws only where DispCheck finds them on the screen: a
 // corner of the sprite's quad (SprDispCheck's, in screen pixels) inside 320x240, or an edge across it. DispCheck here
@@ -23,6 +29,8 @@
 #define SCREEN_HEIGHT 240
 #define WIDE_LEFT -160.0f
 #define WIDE_RIGHT 480.0f
+// The depth buffer, where the game points the RDP's depth image every time it sets it (func_800295D4_2A1D4).
+#define DEPTH_IMAGE 0x003D0800
 // The frames in flight, each with its own viewport and matrices in a camera.
 #define FRAMES 4
 
@@ -84,6 +92,14 @@ RECOMP_PATCH void func_800204C0_210C0(s16 index, Gfx** gfx) {
     mp_model_camera(index, &matrices->modelview, &matrices->projection);
 }
 
+// The pass RT64 draws in ended, and a new one started at the next thing drawn: RT64 starts one where the depth image
+// changes, as it does where the game clears the depth buffer. The depth image, set away and back, is the same.
+static void new_pass(Gfx** gfx) {
+    gDPPipeSync((*gfx)++);
+    gDPSetDepthImage((*gfx)++, 0);
+    gDPSetDepthImage((*gfx)++, DEPTH_IMAGE);
+}
+
 RECOMP_PATCH void func_8002064C_2124C(s16 index, Gfx** gfx) {
     Camera* camera = &D_800C9B80_CA780[index];
     s32 left = fixed(camera->scissor[0]);
@@ -97,6 +113,10 @@ RECOMP_PATCH void func_8002064C_2124C(s16 index, Gfx** gfx) {
         return;
     }
 
+    // @recomp Its 3D widened as its own, not fitted to 4:3 with what the frame drew before it.
+    if (!board_back_4x3()) {
+        new_pass(gfx);
+    }
     gDPSetScissorFrac((*gfx)++, G_SC_NON_INTERLACE, left, top, right, bottom);
 }
 
