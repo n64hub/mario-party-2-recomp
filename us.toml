@@ -86,6 +86,22 @@ func = "SprDisp"
 before_vram = 0x800858E8
 text = "{ void mp_hud_sprite_end(uint8_t*, gpr); mp_hud_sprite_end(rdram, ctx->r21); }"
 
+# Each frame's display list, with room for what the engine adds to it. func_8002F960_30560 sets aside one a frame (the
+# number of frames a byte at 0x800FDBCA), each of as many commands as its fourth argument (a u16 at 0x8010116E: 0x2004
+# at boot, 0x1000 on a board), from the game's heap, and puts their addresses at 0x800FD810, which the frame's start
+# reads into 0x800FDBCC, the display list's next command. Nothing checks its end: a frame past it writes over the heap's
+# next block, and the game stops at its next allocation. Each sprite in the 4:3 middle drawn out to the window's edges
+# (lib/mario-party-engine/src/hud.cpp) takes about ten commands more, and at Western Land's start, its board and its
+# panels, a frame went past the board's 0x1000. So each frame's list is in the upper 4 MB of the 8 the runtime gives
+# the game, which the game, made for 4 MB without the Expansion Pak, never uses (its heaps end at 0x802E0000): frame n's
+# at 0x80400000 + n * 0x80000, 0x10000 commands, eight times the most the game asks for. The game's own, left unused,
+# stays in its heap as before. It can't be in the runtime's heap, past 8 MB, where RT64 doesn't read a display list.
+# The hook is before the address is stored, with s1 the frame, s3 the commands and v0 the game's list.
+[[patches.hook]]
+func = "func_8002F960_30560"
+before_vram = 0x8002FA28
+text = "{ int frame = (int16_t)ctx->r17; if ((frame >= 0) && (frame < 8) && ((ctx->r19 & 0xFFFF) <= 0x2004) && (ctx->r2 != 0)) { ctx->r2 = (gpr)(int32_t)(0x80400000 + frame * 0x80000); } }"
+
 # The item a player uses carried out of their panel by their character's hand (hud.cpp, mp_hud_item_at and
 # mp_hud_hand_read). func_800629AC_635AC(player, x, y) moves the item, member 2 of the panel's group, whose place is
 # the floats at 0x48 of its sprite (SprPosSet's). Each board reads the hand's picture with DataRead(file), file 0x86
