@@ -290,3 +290,24 @@ void widescreen_parade(void) {
         *(f32*)place->address = place->x + ((place->x < 0.0f) ? -out : out);
     }
 }
+
+// A board's characters and props, the opening parade's runners among them, are hidden once they're off the screen:
+// func_80043A60_44660 projects each one's place onto the 320 by 240 screen (func_800537F8_543F8) and hides it past X
+// 370 or -50, Y 290 or -20, 4:3's edges and 50 units more, so that one whose middle has just left the screen still shows
+// the half of it that hasn't. A wider picture reaches past 4:3's sides by 120 times its aspect less 160 units (53 at
+// 16:9), so one was hidden while it still showed at the window's sides: a parade runner gone short of the window's edge
+// with its shadow running on. us.toml's hook calls this with the projected place between the projection and the test:
+// its X moved toward the middle by as far as the window reaches past 4:3's edges, so it is hidden 50 units past the
+// window's, and at 4:3 left where it was. Not past the middle, which the test never hides.
+void widescreen_board_shown(f32* screen) {
+    f32 past = 120.0f * mp_aspect_ratio() - 160.0f;
+
+    if (past <= 0.0f) {
+        return;
+    }
+    if (screen[0] > 160.0f) {
+        screen[0] = (screen[0] - past > 160.0f) ? screen[0] - past : 160.0f;
+    } else {
+        screen[0] = (screen[0] + past < 160.0f) ? screen[0] + past : 160.0f;
+    }
+}
