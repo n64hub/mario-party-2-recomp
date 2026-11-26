@@ -237,7 +237,8 @@ void widescreen_overlay(s32 overlay) {
 
 // The seas of short_scenes that are widened in x so that they reach a wide window's edges (lib/mario-party-engine's
 // board_back_stage_widened, which moves the scene's widest out with them): a sea with nothing standing at its edges,
-// which reads the same wider. A room's walls, a stage built for 4:3 and a painted backdrop keep their cap.
+// which reads the same wider. A room's walls, a stage built for 4:3 and a painted backdrop keep their cap, but for the
+// opening's theater (widescreen_theater_stage), whose curtains end in a plain colour and hide what is widened.
 
 // The model instances (0xC0 bytes each), their scale at 0x34, which the object manager copies an object's onto only for
 // its first model.
@@ -256,4 +257,49 @@ extern ModelInstance* D_800FC834_FD434;
 // each frame, not a model of its own to scale.
 void widescreen_bumper_lava(omObjData* stage) {
     D_800FC834_FD434[stage->model[1]].scale.x = board_back_stage_widened(1.65f);
+}
+
+// The opening's theater, where Toad tells the story (func_80105AB8_3D7FD8_TitleScreenAndIntro), widened to a wide
+// window's edges up to 16:9. Its set, the red curtains, the pink borders above and below them and the floor's front
+// (file 0xE0000, built about the middle), ends at 1.57 wide at the curtains' outer edges, and the characters waiting in
+// the wings showed past it. The camera never moves, so the set is made as wide as the window and no wider (not
+// board_back_stage_widened's spare): the curtains, wider, hide more of the wings, and their inner edges move out by as
+// much. The painted backdrop between them is a sprite, each picture of the story a sprite group made anew, 236 wide
+// about the middle with the curtains' inner edges 221 apart at 4:3, so it is widened by as much less, to meet them with
+// a little to spare under them, and no slit of black opens beside it. Past 16:9 the set keeps that width, black beside
+// it, so the painting is stretched by no more than 10%.
+#define THEATER_WIDEST 1.55f
+#define THEATER_MOST (16.0f / 9.0f / THEATER_WIDEST)
+#define THEATER_PICTURE (226.0f / 236.0f)
+
+f32 mp_aspect_ratio(void);
+extern void SprScaleSet(s16 group, s16 index, f32 x, f32 y);
+
+static f32 theater_widened(void) {
+    f32 times = mp_aspect_ratio() / THEATER_WIDEST;
+
+    if (times < 1.0f) {
+        times = 1.0f;
+    }
+    if (times > THEATER_MOST) {
+        times = THEATER_MOST;
+    }
+    board_back_scene_widest(THEATER_WIDEST * times);
+    return times;
+}
+
+// The set, from us.toml's hook as the theater is made: the game never writes its model's scale again.
+void widescreen_theater_stage(s16 model) {
+    D_800FC834_FD434[model].scale.x = theater_widened();
+}
+
+// A picture the theater shows, from us.toml's hook as func_80104448_3D6968_TitleScreenAndIntro has made and placed it,
+// its sprite group at picture[2]: the backdrop is the one at the screen's middle, x 160 and y 100, the others lower.
+void widescreen_theater_picture(s32* picture, s32 x, s32 y) {
+    f32 times;
+
+    if ((x == 160) && (y == 100)) {
+        times = theater_widened() * THEATER_PICTURE;
+        SprScaleSet(picture[2], 0, (times < 1.0f) ? 1.0f : times, 1.0f);
+    }
 }

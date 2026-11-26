@@ -166,6 +166,20 @@ func = "func_80103430_211DD0_BumperBalls"
 before_vram = 0x80103494
 text = "{ void widescreen_bumper_lava(uint8_t*, recomp_context*); recomp_context saved = *ctx; ctx->r4 = ctx->r16; widescreen_bumper_lava(rdram, ctx); *ctx = saved; }"
 
+# The opening's theater widened to a wide window's edges (patches/widescreen.c, widescreen_theater_stage): its set as
+# func_80105AB8_3D7FD8_TitleScreenAndIntro has made it, the model in v0, and each picture as
+# func_80104448_3D6968_TitleScreenAndIntro has made and placed it, the picture in s0, its x and y in the top halves of
+# s2 and s3. The game's registers are kept around each call.
+[[patches.hook]]
+func = "func_80105AB8_3D7FD8_TitleScreenAndIntro"
+before_vram = 0x801061FC
+text = "{ void widescreen_theater_stage(uint8_t*, recomp_context*); recomp_context saved = *ctx; ctx->r4 = (int16_t)ctx->r2; widescreen_theater_stage(rdram, ctx); *ctx = saved; }"
+
+[[patches.hook]]
+func = "func_80104448_3D6968_TitleScreenAndIntro"
+before_vram = 0x80104508
+text = "{ void widescreen_theater_picture(uint8_t*, recomp_context*); recomp_context saved = *ctx; ctx->r4 = ctx->r16; ctx->r5 = (int32_t)ctx->r18 >> 16; ctx->r6 = (int32_t)ctx->r19 >> 16; widescreen_theater_picture(rdram, ctx); *ctx = saved; }"
+
 # Board Movement and Map Scrolling (lib/mario-party-engine/src/board_options.cpp), Original by default.
 # Fast board movement: func_80056E34_57A34(player, frames) takes a player to the next space in so many frames, 10 (a1)
 # for a walk from func_800650F0_65CF0 and board 0x4C's func_801034C8_326888_name_4C (15 is a jump): 5.
