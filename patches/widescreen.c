@@ -229,3 +229,64 @@ extern ModelInstance* D_800FC834_FD434;
 void widescreen_bumper_lava(omObjData* stage) {
     D_800FC834_FD434[stage->model[1]].scale.x = board_back_stage_widened(1.65f);
 }
+
+// A board's opening (overlay 0x55), the parade under the board's name: Toad and the players run across the screen,
+// off at one side, and come back in the board's costumes, each to a spot in a line and then off at the other side
+// (func_80102B58_361A48_name_55 starts a process for each: Toad's func_80102F34_361E24_name_55 and the players'
+// func_8010308C_361F7C_name_55, or func_801036B4_3625A4_name_55 and func_8010390C_3627FC_name_55 on board 5). The
+// places they run between are in the overlay's data, x past 4:3's sides where they turn back, change and stop, and
+// the game hides a model there and leaves its shadow. A wide window showed all of that: a runner gone at 4:3's right
+// edge with its shadow left behind, Toad stopped in the window's left side, the players piled up beside him running
+// on the spot, and their shadows there after the game hid them.
+//
+// The camera (func_801053B0_3642A0_name_55) is at z -900 looking along z, 45 degrees high, so at a place's z a
+// window wider than 4:3 shows (z + 900) * tan(22.5 degrees) * (its aspect - 4/3) more at each side. us.toml's hook
+// calls widescreen_parade as func_80102B58_361A48_name_55 starts, before its processes read them, and it moves each
+// x past 4:3 out by that much from the game's. Each run gets longer by the same at its start and its end, so the
+// characters turn back as far past the window's edge as past 4:3's, in the same order and as far apart as at 4:3;
+// the spots in the line are on the screen and stay. The overlay is loaded again each time, but this writes x from
+// the game's, not from what is there.
+#define PARADE_CAMERA_Z -900.0f
+#define TAN_22_5 0.41421356f
+
+typedef struct {
+    u32 address; // a place's x, of 3 floats
+    f32 x;       // the game's
+    f32 z;
+} ParadePlace;
+
+static const ParadePlace parade_places[] = {
+    // Toad's run in, and each player's start and end of theirs, in their own clothes.
+    { 0x8010B7D0, 500.0f, 200.0f },   { 0x8010B7DC, -600.0f, 200.0f },  { 0x8010B7E8, 700.0f, 200.0f },
+    { 0x8010B7F4, -850.0f, 200.0f },  { 0x8010B800, 950.0f, 200.0f },   { 0x8010B80C, -1050.0f, 200.0f },
+    { 0x8010B818, 1200.0f, 200.0f },  { 0x8010B824, -1300.0f, 200.0f }, { 0x8010B830, 1450.0f, 200.0f },
+    { 0x8010B83C, -1550.0f, 200.0f },
+    // In costume: Toad's start and end, the players' starts, and where they all go off.
+    { 0x8010B848, -900.0f, 0.0f },    { 0x8010B854, 700.0f, 0.0f },     { 0x8010B860, -900.0f, 0.0f },
+    { 0x8010B878, -900.0f, 0.0f },    { 0x8010B890, -900.0f, 0.0f },    { 0x8010B8A8, -900.0f, 0.0f },
+    { 0x8010B8C0, 700.0f, 0.0f },
+    // Board 5's, the same runs in their own clothes.
+    { 0x8010B8D0, 500.0f, 200.0f },   { 0x8010B8DC, -600.0f, 200.0f },  { 0x8010B8E8, 700.0f, 200.0f },
+    { 0x8010B8F4, -850.0f, 200.0f },  { 0x8010B900, 950.0f, 200.0f },   { 0x8010B90C, -1050.0f, 200.0f },
+    { 0x8010B918, 1200.0f, 200.0f },  { 0x8010B924, -1300.0f, 200.0f }, { 0x8010B930, 1450.0f, 200.0f },
+    { 0x8010B93C, -1550.0f, 200.0f },
+    // Board 5's in costume: Toad's start (he stops in the middle), each player's start and end, and where Toad goes.
+    { 0x8010B948, -2250.0f, 0.0f },   { 0x8010B960, -600.0f, 0.0f },    { 0x8010B96C, 700.0f, 0.0f },
+    { 0x8010B978, -600.0f, 0.0f },    { 0x8010B984, 700.0f, 0.0f },     { 0x8010B990, -600.0f, 0.0f },
+    { 0x8010B99C, 700.0f, 0.0f },     { 0x8010B9A8, -600.0f, 0.0f },    { 0x8010B9B4, 700.0f, 0.0f },
+    { 0x8010B9C0, 700.0f, 0.0f },
+};
+
+f32 mp_aspect_ratio(void);
+
+void widescreen_parade(void) {
+    f32 wider = mp_aspect_ratio() - 4.0f / 3.0f;
+    u32 i;
+
+    for (i = 0; i < sizeof(parade_places) / sizeof(parade_places[0]); i++) {
+        const ParadePlace* place = &parade_places[i];
+        f32 out = (place->z - PARADE_CAMERA_Z) * TAN_22_5 * wider;
+
+        *(f32*)place->address = place->x + ((place->x < 0.0f) ? -out : out);
+    }
+}

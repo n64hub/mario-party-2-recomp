@@ -153,6 +153,13 @@ func = "func_80103430_211DD0_BumperBalls"
 before_vram = 0x80103494
 text = "{ void widescreen_bumper_lava(uint8_t*, recomp_context*); recomp_context saved = *ctx; ctx->r4 = ctx->r16; widescreen_bumper_lava(rdram, ctx); *ctx = saved; }"
 
+# A board's opening parade turning back past a wide window's edges (patches/widescreen.c, widescreen_parade): its
+# places moved out as func_80102B58_361A48_name_55 starts, before it starts the processes that read them.
+[[patches.hook]]
+func = "func_80102B58_361A48_name_55"
+before_vram = 0x80102B58
+text = "{ void widescreen_parade(uint8_t*, recomp_context*); recomp_context saved = *ctx; widescreen_parade(rdram, ctx); *ctx = saved; }"
+
 # Board Movement and Map Scrolling (lib/mario-party-engine/src/board_options.cpp), Original by default.
 # Fast board movement: func_80056E34_57A34(player, frames) takes a player to the next space in so many frames, 10 (a1)
 # for a walk from func_800650F0_65CF0 and board 0x4C's func_801034C8_326888_name_4C (15 is a jump): 5.
