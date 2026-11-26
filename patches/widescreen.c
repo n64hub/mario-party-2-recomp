@@ -303,3 +303,17 @@ void widescreen_theater_picture(s32* picture, s32 x, s32 y) {
         SprScaleSet(picture[2], 0, (times < 1.0f) ? 1.0f : times, 1.0f);
     }
 }
+
+// The Koopa who comes on as Bowser attacks waits in front of the curtains, out past 4:3 at x -650, and a wide window
+// showed him standing there before he walked on: from us.toml's hook as the theater places him, the x (a float's bits)
+// is moved out by as much as the set, past the window's edge.
+s32 widescreen_theater_wing(s32 x) {
+    union {
+        s32 bits;
+        f32 x;
+    } at;
+
+    at.bits = x;
+    at.x *= theater_widened();
+    return at.bits;
+}
