@@ -65,6 +65,15 @@ _Static_assert(__builtin_offsetof(Camera, scissor) == 0x98, "Camera's scissor");
 _Static_assert(sizeof(Camera) == 0x2B8, "Camera's size");
 
 extern Camera* D_800C9B80_CA780;
+
+// How much wider than the game draws it the scene playing draws its 3D, about the screen's middle (widescreen_overlay):
+// Deep Sea Salvage's (overlay 0x3C) rocks, at both sides of its sea, are 3D that ends about 2 pixels short of 4:3's
+// edges, where a TV's overscan hid it, and the 2D sea behind them showed in strips 3 to 6 of a 1280x720 window's
+// pixels wide beside them, down the whole height of the rocks. 2% wider reaches 4:3's edges with a pixel to spare,
+// and what goes past them is under the black at its sides; the sea's 3D and the subs in it are drawn as much wider.
+#define DEEP_SEA_WIDER 1.02f
+static f32 scene_wider = 1.0f;
+
 void mp_model_camera(s32 camera, Mtx* view, Mtx* projection);
 // The frame being built, of FRAMES.
 extern s16 D_800FFFD6_100BD6;
@@ -86,7 +95,8 @@ RECOMP_PATCH void func_800204C0_210C0(s16 index, Gfx** gfx) {
     CameraMatrices* matrices = &camera->matrices[D_800FFFD6_100BD6];
     Vp* viewport = &camera->viewports[D_800FFFD6_100BD6];
 
-    viewport->vp.vscale[0] = (s16)camera->viewport_scale[0];
+    // @recomp The scene's 3D as much wider as it is drawn (scene_wider).
+    viewport->vp.vscale[0] = (s16)(camera->viewport_scale[0] * scene_wider);
     viewport->vp.vscale[1] = (s16)camera->viewport_scale[1];
     viewport->vp.vscale[2] = (s16)camera->viewport_scale[2];
     viewport->vp.vtrans[0] = (s16)camera->viewport_trans[0];
@@ -191,7 +201,8 @@ RECOMP_PATCH s32 DispCheck(Vec2f* corners) {
 //   top one not, its subs drawn past its sides into the black.
 // - 0x3C, Deep Sea Salvage: the sky, the sea and the reef far off are a 2D picture of the screen's size, and the sea
 //   the players swim in, tinted, and its rocks are 3D that ends at 4:3's edges. Stretched over a wide window, the
-//   picture's sea went on past them beside the water's tinted box.
+//   picture's sea went on past them beside the water's tinted box. The rocks end 2 pixels short of 4:3's edges too,
+//   and its 3D is drawn 2% wider to reach them (scene_wider).
 // - 0x70, a board's results after each minigame: the board dimmed behind the table is a map of the screen's size
 //   (func_801042D8_410738_Results), which the engine judges 4:3 by its edges each frame; it is 4:3 by its overlay too,
 //   so nothing the HUD aligns to the window's edges is drawn over the black at its sides in any frame.
@@ -235,6 +246,7 @@ void widescreen_overlay(s32 overlay) {
         }
     }
     board_back_scene_widest(widest);
+    scene_wider = (overlay == 0x3C) ? DEEP_SEA_WIDER : 1.0f;
 }
 
 // The seas of short_scenes that are widened in x so that they reach a wide window's edges (lib/mario-party-engine's
