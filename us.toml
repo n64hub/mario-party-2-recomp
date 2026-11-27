@@ -58,7 +58,9 @@ text = "ctx->r2 = 0x005003C0;"
 # (SprKill(group), and the sprite manager's init, func_8007F630_80230, which forgets them all; the groups' addresses
 # are at 0x800FA1B0) and each sprite drawn (SprDisp(gfx, sprite), every path out of it through 0x800858E8 with gfx in
 # s5), with its width on the screen: its frame's width (a u16 at 0x4 of its frame, 12 bytes each, from the frames its
-# data at 0x84 points to, by its frame's index at 0x90) by its x scale (a float at 0x18), as SprDisp reads them.
+# data at 0x84 points to, by its frame's index at 0x90) by its x scale (a float at 0x18), as SprDisp reads them; and
+# its x (a float at 0x4) and whether its PutSprite draws it as texture rectangles, which it cuts off at x 0 (none of
+# the sprite's flags at 0x24 for a matrix, 0x40000000, which SprDisp copies to 0x800ED6A0 for PutSprite to read).
 [[patches.hook]]
 func = "func_800600F8_60CF8"
 before_vram = 0x800600F8
@@ -77,12 +79,28 @@ text = "{ void mp_hud_reset(uint8_t*); mp_hud_reset(rdram); }"
 [[patches.hook]]
 func = "SprDisp"
 before_vram = 0x800849D4
-text = "{ void mp_hud_sprite_width(uint8_t*, float); void mp_hud_sprite_start(uint8_t*, gpr, gpr); gpr s = ctx->r5; gpr data = (gpr)(int32_t)MEM_W(0x84, s); if (data != 0) { gpr frame = (gpr)(int32_t)MEM_W(0x0, data) + MEM_H(0x90, s) * 12; union { uint32_t u; float f; } scale; scale.u = (uint32_t)MEM_W(0x18, s); mp_hud_sprite_width(rdram, MEM_HU(0x4, frame) * scale.f); } mp_hud_sprite_start(rdram, ctx->r4, ctx->r5); }"
+text = "{ void mp_hud_sprite_width(uint8_t*, float); void mp_hud_sprite_start(uint8_t*, gpr, gpr); gpr s = ctx->r5; gpr data = (gpr)(int32_t)MEM_W(0x84, s); if (data != 0) { gpr frame = (gpr)(int32_t)MEM_W(0x0, data) + MEM_H(0x90, s) * 12; union { uint32_t u; float f; } scale; scale.u = (uint32_t)MEM_W(0x18, s); mp_hud_sprite_width(rdram, MEM_HU(0x4, frame) * scale.f); } mp_hud_sprite_start(rdram, ctx->r4, ctx->r5); void mp_hud_sprite_reach_float(uint8_t*, gpr, gpr, int32_t); mp_hud_sprite_reach_float(rdram, ctx->r4, s + 4, ((uint32_t)MEM_W(0x24, s) & 0x40000000) == 0); }"
 
 [[patches.hook]]
 func = "SprDisp"
 before_vram = 0x800858E8
 text = "{ void mp_hud_sprite_end(uint8_t*, gpr); mp_hud_sprite_end(rdram, ctx->r21); }"
+
+# Each frame's display list, with room for what the engine adds to it. func_8002F960_30560 sets aside one a frame (the
+# number of frames a byte at 0x800FDBCA), each of as many commands as its fourth argument (a u16 at 0x8010116E: 0x2004
+# at boot, 0x1000 on a board), from the game's heap, and puts their addresses at 0x800FD810, which the frame's start
+# reads into 0x800FDBCC, the display list's next command. Nothing checks its end: a frame past it writes over the heap's
+# next block, and the game stops at its next allocation. Each sprite in the 4:3 middle drawn out to the window's edges
+# (lib/mario-party-engine/src/hud.cpp) takes about ten commands more, and at Western Land's start, its board and its
+# panels, a frame went past the board's 0x1000. So each frame's list is in the upper 4 MB of the 8 the runtime gives
+# the game, which the game, made for 4 MB without the Expansion Pak, never uses (its heaps end at 0x802E0000): frame n's
+# at 0x80400000 + n * 0x80000, 0x10000 commands, eight times the most the game asks for. The game's own, left unused,
+# stays in its heap as before. It can't be in the runtime's heap, past 8 MB, where RT64 doesn't read a display list.
+# The hook is before the address is stored, with s1 the frame, s3 the commands and v0 the game's list.
+[[patches.hook]]
+func = "func_8002F960_30560"
+before_vram = 0x8002FA28
+text = "{ int frame = (int16_t)ctx->r17; if ((frame >= 0) && (frame < 8) && ((ctx->r19 & 0xFFFF) <= 0x2004) && (ctx->r2 != 0)) { ctx->r2 = (gpr)(int32_t)(0x80400000 + frame * 0x80000); } }"
 
 # The item a player uses carried out of their panel by their character's hand (hud.cpp, mp_hud_item_at and
 # mp_hud_hand_read). func_800629AC_635AC(player, x, y) moves the item, member 2 of the panel's group, whose place is
@@ -123,6 +141,17 @@ text = "{ void mp_wipe_fill_end(uint8_t*, gpr); mp_wipe_fill_end(rdram, ctx->r4)
 func = "func_8009110C_91D0C"
 before_vram = 0x8009199C
 text = "{ void mp_wipe_sides(uint8_t*, gpr); mp_wipe_sides(rdram, ctx->r8); }"
+
+# The opening theater's spotlights past 4:3: func_80103BF0_3D6110_TitleScreenAndIntro(gfx, in s1) dims the stage round
+# the characters in the spotlight with a mask the CPU draws the spotlights into (255 where it is dimmed), in 32x32
+# pieces stretched over 0 to 320 under a 4:3 scissor, in the colour at D_80112060 with that colour's alpha times the
+# mask's. So nothing dimmed the stage past 4:3, which stayed bright with a seam at 4:3's edges. Its colour and combine
+# are set at 0x80103E14: there the sides past 4:3 (mp_wipe_sides) are drawn in that colour and alpha, as the mask is
+# where it is 255, and the game's combine is put back for its pieces.
+[[patches.hook]]
+func = "func_80103BF0_3D6110_TitleScreenAndIntro"
+before_vram = 0x80103E14
+text = "{ void mp_wipe_sides(uint8_t*, gpr); gpr g = MEM_W(0, ctx->r17); MEM_W(0, g) = (int32_t)0xFCFFFFFF; MEM_W(4, g) = (int32_t)0xFFFDF6FB; MEM_W(0, ctx->r17) = (int32_t)(g + 8); mp_wipe_sides(rdram, ctx->r17); g = MEM_W(0, ctx->r17); MEM_W(0, g) = (int32_t)0xFCFFB3FF; MEM_W(4, g) = (int32_t)0xFF65FEFF; MEM_W(0, ctx->r17) = (int32_t)(g + 8); }"
 
 # A 4:3 picture's sides black (lib/mario-party-engine/src/wipe.cpp, mp_wipe_picture_sides): func_800286FC_292FC ends
 # the frame's last display list after its wipe and its text, the list's next command in v0, with its gDPFullSync.
@@ -167,6 +196,27 @@ text = "{ void widescreen_parade(uint8_t*, recomp_context*); recomp_context save
 func = "func_80043A60_44660"
 before_vram = 0x80043B2C
 text = "{ void widescreen_board_shown(uint8_t*, recomp_context*); recomp_context saved = *ctx; ctx->r4 = ctx->r29 + 0x10; widescreen_board_shown(rdram, ctx); *ctx = saved; }"
+
+# The opening's theater widened to a wide window's edges (patches/widescreen.c, widescreen_theater_stage): its set as
+# func_80105AB8_3D7FD8_TitleScreenAndIntro has made it, the model in v0, and each picture as
+# func_80104448_3D6968_TitleScreenAndIntro has made and placed it, the picture in s0, its x and y in the top halves of
+# s2 and s3. The game's registers are kept around each call.
+[[patches.hook]]
+func = "func_80105AB8_3D7FD8_TitleScreenAndIntro"
+before_vram = 0x801061FC
+text = "{ void widescreen_theater_stage(uint8_t*, recomp_context*); recomp_context saved = *ctx; ctx->r4 = (int16_t)ctx->r2; widescreen_theater_stage(rdram, ctx); *ctx = saved; }"
+
+[[patches.hook]]
+func = "func_80104448_3D6968_TitleScreenAndIntro"
+before_vram = 0x80104508
+text = "{ void widescreen_theater_picture(uint8_t*, recomp_context*); recomp_context saved = *ctx; ctx->r4 = ctx->r16; ctx->r5 = (int32_t)ctx->r18 >> 16; ctx->r6 = (int32_t)ctx->r19 >> 16; widescreen_theater_picture(rdram, ctx); *ctx = saved; }"
+
+# The Koopa's place in the wings as func_80105AB8_3D7FD8_TitleScreenAndIntro sets it, x -650 in a1 (a float's bits), moved
+# out by as much as the set (widescreen_theater_wing).
+[[patches.hook]]
+func = "func_80105AB8_3D7FD8_TitleScreenAndIntro"
+before_vram = 0x801096C8
+text = "{ void widescreen_theater_wing(uint8_t*, recomp_context*); recomp_context saved = *ctx; ctx->r4 = ctx->r5; widescreen_theater_wing(rdram, ctx); uint64_t x = ctx->r2; *ctx = saved; ctx->r5 = (int32_t)x; }"
 
 # Board Movement and Map Scrolling (lib/mario-party-engine/src/board_options.cpp), Original by default.
 # Fast board movement: func_80056E34_57A34(player, frames) takes a player to the next space in so many frames, 10 (a1)

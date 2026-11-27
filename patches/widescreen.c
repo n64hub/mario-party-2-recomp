@@ -8,21 +8,37 @@
 // A camera keeps its scissor as four floats, which the game writes in 10.2 fixed point, and camera_view.c takes whole
 // pixels. A camera whose scissor's sides are whole pixels, the whole screen's or the border's, is widened, its top and
 // bottom to the pixel at or above the game's where they have a part of one; any other keeps the game's scissor as it
-// writes it.
+// writes it, and, but for a cut of nearly the whole screen's width (OVERSCAN), starts a pass of RT64's own
+// (new_pass). RT64 widens a 3D view with the window only where it spans the width of all that the pass it is drawn in
+// draws, and the frame's first pass holds the clear of the whole screen to the background's colour
+// (func_800295D4_2A1D4, after the depth buffer's): the first camera's first models, drawn in it, were fitted to 4:3
+// under a scissor widened with the rest. Shell Shocked's top-left quarter, the first of its four
+// cameras, drew its floor and sky three quarters as wide as the quarter, at its right side, with black at its left
+// where the fence, drawn in a later pass, went on across. The other quarters, and the first one's later models, were
+// each in a pass of their own already. A scene drawn at 4:3 (board_back.c) starts none, so its 3D stays inside 4:3,
+// and nor does overlay 0x48's camera, 8 pixels inside the screen at each side, which camera_view.c keeps at 4:3.
 //
 // Some of what the game draws in 2D, its sprites (SprDisp), it draws only where DispCheck finds them on the screen: a
 // corner of the sprite's quad (SprDispCheck's, in screen pixels) inside 320x240, or an edge across it. DispCheck here
 // keeps a sprite whose quad's bounds reach a screen half as wide again at each side (x from -160 to 480: a picture up
-// to 8:3, wider than 21:9); a sprite past 4:3's sides is drawn only where the window is wider than 4:3. A board's
+// to 8:3, wider than 21:9), and on the right as far again (to 640) for one the engine's src/hud.cpp has moved right
+// by as far as the window reaches past 4:3 (us.toml's SprDisp hook, for PutSprite, which cuts a texture rectangle off
+// at x 0); a sprite past 4:3's sides is drawn only where the window is wider than 4:3. A board's
 // ground is no sprite but its background's tiles (background.c).
 
 #include "patches.h"
 #include "../lib/mario-party-engine/patches/camera_view.h"
 #include "../lib/mario-party-engine/patches/board_back.h"
 
+#define SCREEN_WIDTH 320
+// A scissor at least this close to both of the screen's sides, in pixels: a cut of the whole screen, not one view of
+// several.
+#define OVERSCAN 8
 #define SCREEN_HEIGHT 240
 #define WIDE_LEFT -160.0f
-#define WIDE_RIGHT 480.0f
+#define WIDE_RIGHT 640.0f
+// The depth buffer, where the game points the RDP's depth image every time it sets it (func_800295D4_2A1D4).
+#define DEPTH_IMAGE 0x003D0800
 // The frames in flight, each with its own viewport and matrices in a camera.
 #define FRAMES 4
 
@@ -49,6 +65,15 @@ _Static_assert(__builtin_offsetof(Camera, scissor) == 0x98, "Camera's scissor");
 _Static_assert(sizeof(Camera) == 0x2B8, "Camera's size");
 
 extern Camera* D_800C9B80_CA780;
+
+// How much wider than the game draws it the scene playing draws its 3D, about the screen's middle (widescreen_overlay):
+// Deep Sea Salvage's (overlay 0x3C) rocks, at both sides of its sea, are 3D that ends about 2 pixels short of 4:3's
+// edges, where a TV's overscan hid it, and the 2D sea behind them showed in strips 3 to 6 of a 1280x720 window's
+// pixels wide beside them, down the whole height of the rocks. 2% wider reaches 4:3's edges with a pixel to spare,
+// and what goes past them is under the black at its sides; the sea's 3D and the subs in it are drawn as much wider.
+#define DEEP_SEA_WIDER 1.02f
+static f32 scene_wider = 1.0f;
+
 void mp_model_camera(s32 camera, Mtx* view, Mtx* projection);
 // The frame being built, of FRAMES.
 extern s16 D_800FFFD6_100BD6;
@@ -70,7 +95,8 @@ RECOMP_PATCH void func_800204C0_210C0(s16 index, Gfx** gfx) {
     CameraMatrices* matrices = &camera->matrices[D_800FFFD6_100BD6];
     Vp* viewport = &camera->viewports[D_800FFFD6_100BD6];
 
-    viewport->vp.vscale[0] = (s16)camera->viewport_scale[0];
+    // @recomp The scene's 3D as much wider as it is drawn (scene_wider).
+    viewport->vp.vscale[0] = (s16)(camera->viewport_scale[0] * scene_wider);
     viewport->vp.vscale[1] = (s16)camera->viewport_scale[1];
     viewport->vp.vscale[2] = (s16)camera->viewport_scale[2];
     viewport->vp.vtrans[0] = (s16)camera->viewport_trans[0];
@@ -82,6 +108,14 @@ RECOMP_PATCH void func_800204C0_210C0(s16 index, Gfx** gfx) {
     gSPMatrix((*gfx)++, (u32)&matrices->modelview + 0x80000000, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
     // @recomp A cut of the camera to another shot, its models not interpolated across it.
     mp_model_camera(index, &matrices->modelview, &matrices->projection);
+}
+
+// The pass RT64 draws in ended, and a new one started at the next thing drawn: RT64 starts one where the depth image
+// changes, as it does where the game clears the depth buffer. The depth image, set away and back, is the same.
+static void new_pass(Gfx** gfx) {
+    gDPPipeSync((*gfx)++);
+    gDPSetDepthImage((*gfx)++, 0);
+    gDPSetDepthImage((*gfx)++, DEPTH_IMAGE);
 }
 
 RECOMP_PATCH void func_8002064C_2124C(s16 index, Gfx** gfx) {
@@ -97,6 +131,10 @@ RECOMP_PATCH void func_8002064C_2124C(s16 index, Gfx** gfx) {
         return;
     }
 
+    // @recomp Its 3D widened as its own, not fitted to 4:3 with what the frame drew before it.
+    if (!board_back_4x3() && (left > OVERSCAN * 4 || right < (SCREEN_WIDTH - OVERSCAN) * 4)) {
+        new_pass(gfx);
+    }
     gDPSetScissorFrac((*gfx)++, G_SC_NON_INTERLACE, left, top, right, bottom);
 }
 
@@ -163,12 +201,15 @@ RECOMP_PATCH s32 DispCheck(Vec2f* corners) {
 //   top one not, its subs drawn past its sides into the black.
 // - 0x3C, Deep Sea Salvage: the sky, the sea and the reef far off are a 2D picture of the screen's size, and the sea
 //   the players swim in, tinted, and its rocks are 3D that ends at 4:3's edges. Stretched over a wide window, the
-//   picture's sea went on past them beside the water's tinted box.
+//   picture's sea went on past them beside the water's tinted box. The rocks end 2 pixels short of 4:3's edges too,
+//   and its 3D is drawn 2% wider to reach them (scene_wider).
 // - 0x70, a board's results after each minigame: the board dimmed behind the table is a map of the screen's size
 //   (func_801042D8_410738_Results), which the engine judges 4:3 by its edges each frame; it is 4:3 by its overlay too,
 //   so nothing the HUD aligns to the window's edges is drawn over the black at its sides in any frame.
+// - 0x57, the boot's logos (Nintendo 64, Nintendo, Hudson): each a 2D picture of the screen's size on black, which a
+//   wide window stretched to its width.
 static const u8 overlays_4x3[] = { 0x05, 0x09, 0x0A, 0x0E, 0x11, 0x16, 0x17, 0x18, 0x19, 0x1B, 0x1E, 0x1F, 0x20,
-                                   0x21, 0x23, 0x24, 0x2C, 0x2E, 0x38, 0x39, 0x3A, 0x3C, 0x70 };
+                                   0x21, 0x23, 0x24, 0x2C, 0x2E, 0x38, 0x39, 0x3A, 0x3C, 0x57, 0x70 };
 
 // The minigames whose 3D ends short of a wide window's edges, and the widest each is drawn, its width over its height:
 // where its stage ends at its narrowest across the minigame's play, at a 32:9 window. The engine draws one to the
@@ -205,11 +246,13 @@ void widescreen_overlay(s32 overlay) {
         }
     }
     board_back_scene_widest(widest);
+    scene_wider = (overlay == 0x3C) ? DEEP_SEA_WIDER : 1.0f;
 }
 
 // The seas of short_scenes that are widened in x so that they reach a wide window's edges (lib/mario-party-engine's
 // board_back_stage_widened, which moves the scene's widest out with them): a sea with nothing standing at its edges,
-// which reads the same wider. A room's walls, a stage built for 4:3 and a painted backdrop keep their cap.
+// which reads the same wider. A room's walls, a stage built for 4:3 and a painted backdrop keep their cap, but for the
+// opening's theater (widescreen_theater_stage), whose curtains end in a plain colour and hide what is widened.
 
 // The model instances (0xC0 bytes each), their scale at 0x34, which the object manager copies an object's onto only for
 // its first model.
@@ -310,4 +353,63 @@ void widescreen_board_shown(f32* screen) {
     } else {
         screen[0] = (screen[0] + past < 160.0f) ? screen[0] + past : 160.0f;
     }
+}
+
+// The opening's theater, where Toad tells the story (func_80105AB8_3D7FD8_TitleScreenAndIntro), widened to a wide
+// window's edges up to 16:9. Its set, the red curtains, the pink borders above and below them and the floor's front
+// (file 0xE0000, built about the middle), ends at 1.57 wide at the curtains' outer edges, and the characters waiting in
+// the wings showed past it. The camera never moves, so the set is made as wide as the window and no wider (not
+// board_back_stage_widened's spare): the curtains, wider, hide more of the wings, and their inner edges move out by as
+// much. The painted backdrop between them is a sprite, each picture of the story a sprite group made anew, 236 wide
+// about the middle with the curtains' inner edges 221 apart at 4:3, so it is widened by as much less, to meet them with
+// a little to spare under them, and no slit of black opens beside it. Past 16:9 the set keeps that width, black beside
+// it, so the painting is stretched by no more than 10%.
+#define THEATER_WIDEST 1.55f
+#define THEATER_MOST (16.0f / 9.0f / THEATER_WIDEST)
+#define THEATER_PICTURE (226.0f / 236.0f)
+
+f32 mp_aspect_ratio(void);
+extern void SprScaleSet(s16 group, s16 index, f32 x, f32 y);
+
+static f32 theater_widened(void) {
+    f32 times = mp_aspect_ratio() / THEATER_WIDEST;
+
+    if (times < 1.0f) {
+        times = 1.0f;
+    }
+    if (times > THEATER_MOST) {
+        times = THEATER_MOST;
+    }
+    board_back_scene_widest(THEATER_WIDEST * times);
+    return times;
+}
+
+// The set, from us.toml's hook as the theater is made: the game never writes its model's scale again.
+void widescreen_theater_stage(s16 model) {
+    D_800FC834_FD434[model].scale.x = theater_widened();
+}
+
+// A picture the theater shows, from us.toml's hook as func_80104448_3D6968_TitleScreenAndIntro has made and placed it,
+// its sprite group at picture[2]: the backdrop is the one at the screen's middle, x 160 and y 100, the others lower.
+void widescreen_theater_picture(s32* picture, s32 x, s32 y) {
+    f32 times;
+
+    if ((x == 160) && (y == 100)) {
+        times = theater_widened() * THEATER_PICTURE;
+        SprScaleSet(picture[2], 0, (times < 1.0f) ? 1.0f : times, 1.0f);
+    }
+}
+
+// The Koopa who comes on as Bowser attacks waits in front of the curtains, out past 4:3 at x -650, and a wide window
+// showed him standing there before he walked on: from us.toml's hook as the theater places him, the x (a float's bits)
+// is moved out by as much as the set, past the window's edge.
+s32 widescreen_theater_wing(s32 x) {
+    union {
+        s32 bits;
+        f32 x;
+    } at;
+
+    at.bits = x;
+    at.x *= theater_widened();
+    return at.bits;
 }
