@@ -151,10 +151,11 @@ RECOMP_PATCH s32 DispCheck(Vec2f* corners) {
 // widescreen_overlay as each loads): the engine keeps black at the window's sides while one plays (board_back.h's
 // board_back_scene_widest, at 4:3), its src/wipe.cpp drawing it over whatever the scene's 3D reaches past 4:3 at the end of each
 // frame (us.toml's hook at func_800286FC_292FC's gDPFullSync), and the camera's view and the HUD stay inside 4:3.
-// - 0x04, Hammer Slammer (an item minigame): the ruins around the blocks are a 2D picture of the screen's
-//   size, and Baby Bowser, who leaps off its top left corner when an item is won, was drawn on past it over the black.
 // - 0x05, Give Me a Brake (Western Land's item minigame): its desert, the cacti and fence with it, is a picture of the
 //   screen's size, and the frame's white clear showed past it.
+// - 0x06, the item minigame of block stacks in a ring, knocked down with a mallet (the decomp's MalletGoRound; Hammer
+//   Slammer by its players' name): the ruins around the ring end at 4:3's edges, and Baby Bowser, who leaps off their
+//   top left corner as an item is won, stood on in the black past it.
 // - 0x09, Bumper Balloon Cars: its arena, the sand and the fence and stands around it, is a 2D picture of the screen's
 //   size, and the cars that drive on the sand are 3D, kept to it as it is at 4:3. Stretched over a wide window, the
 //   sand went on far past where the cars turn back.
@@ -197,7 +198,7 @@ RECOMP_PATCH s32 DispCheck(Vec2f* corners) {
 // - 0x70, a board's results after each minigame: the board dimmed behind the table is a map of the screen's size
 //   (func_801042D8_410738_Results), which the engine judges 4:3 by its edges each frame; it is 4:3 by its overlay too,
 //   so nothing the HUD aligns to the window's edges is drawn over the black at its sides in any frame.
-static const u8 overlays_4x3[] = { 0x04, 0x05, 0x09, 0x0A, 0x0E, 0x11, 0x16, 0x17, 0x18, 0x19, 0x1B, 0x1E, 0x1F,
+static const u8 overlays_4x3[] = { 0x05, 0x06, 0x09, 0x0A, 0x0E, 0x11, 0x16, 0x17, 0x18, 0x19, 0x1B, 0x1E, 0x1F,
                                    0x20, 0x21, 0x23, 0x24, 0x2C, 0x2E, 0x38, 0x39, 0x3A, 0x3C, 0x70 };
 
 // The minigames whose 3D ends short of a wide window's edges, and the widest each is drawn, its width over its height:
