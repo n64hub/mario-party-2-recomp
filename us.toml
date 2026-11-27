@@ -86,6 +86,19 @@ func = "SprDisp"
 before_vram = 0x800858E8
 text = "{ void mp_hud_sprite_end(uint8_t*, gpr); mp_hud_sprite_end(rdram, ctx->r21); }"
 
+# A picture drawn in the game's own code, not through SprDisp (lib/mario-party-engine/src/hud.cpp,
+# mp_hud_picture_start): func_8007A7FC_7B3FC draws Balloon Burst's platforms and pumps, gauges and all, as rectangles
+# each covering the screen's whole width, through the display list's pointer at 0x800FDBCC, and returns at 0x8007AFD4.
+[[patches.hook]]
+func = "func_8007A7FC_7B3FC"
+before_vram = 0x8007A7FC
+text = "{ void mp_hud_picture_start(uint8_t*, gpr); mp_hud_picture_start(rdram, (gpr)(int32_t)0x800FDBCC); }"
+
+[[patches.hook]]
+func = "func_8007A7FC_7B3FC"
+before_vram = 0x8007AFD4
+text = "{ void mp_hud_picture_end(uint8_t*, gpr); mp_hud_picture_end(rdram, (gpr)(int32_t)0x800FDBCC); }"
+
 # Each frame's display list, with room for what the engine adds to it. func_8002F960_30560 sets aside one a frame (the
 # number of frames a byte at 0x800FDBCA), each of as many commands as its fourth argument (a u16 at 0x8010116E: 0x2004
 # at boot, 0x1000 on a board), from the game's heap, and puts their addresses at 0x800FD810, which the frame's start
