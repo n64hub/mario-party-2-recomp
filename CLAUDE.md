@@ -35,6 +35,8 @@ This repo is the game: its recompilation, the patches over it, the desktop build
 - No ROMs, ROM-derived assets or extracted game data in git, CI or PRs (`tools/ci/check_repo.py` checks). Nothing from
   the decomp's build is committed but `syms/`. The icon (`icons/icon.svg`, the launcher's thumbnail and the program's
   icon by `tools/icon.py`) is drawn for the project from plain shapes: no logo, character or picture from the game.
+  The picture behind the launcher's menu (`icons/launcher_background.jpg`) was made for the project by a player, with
+  nothing from the game in it.
 - The decomp is built only where the ROM is, never in CI.
 - The desktop releases are built where the ROM is too, by `tools/release.sh` (its header says how), and published to
   GitHub Releases with their notes in `releases/`.
@@ -86,7 +88,10 @@ This repo is the game: its recompilation, the patches over it, the desktop build
   manager draw the board's HUD, the players' panels, at the window's left and right edges, and a picture as wide as the
   screen (Abandon Ship's sky) stretched over the window wherever the game puts it (kept to 4:3 in a scene the game draws
   at 4:3), through lib/mario-party-engine's `src/hud.cpp`, and its hooks in the wipe module draw a wipe's colour (an
-  iris's black, a fade) to them too, through its `src/wipe.cpp`. Two hooks in `us.toml` keep the scissor the game's text
+  iris's black, a fade) to them too, through its `src/wipe.cpp`. A sprite in the 4:3 middle is drawn out to the
+  window's edges, so a card sliding past 4:3 (Game Setup's, room 0x58) stays whole; one PutSprite draws as texture
+  rectangles, which it cuts off at x 0, is moved right by the window's reach past 4:3 and its rectangles aligned back
+  (the engine's `mp_hud_sprite_reach_float`). Two hooks in `us.toml` keep the scissor the game's text
   sets inside the picture. The board's camera stops where the wider picture reaches the map's edge
   (`patches/background.c`, with the engine's `src/aspect_ratio.cpp`). A map no wider than 320 (Rules Land's START, 5x5
   tiles) keeps black at its sides, the game having nothing beside it to draw, and its 3D and the HUD keep inside 4:3

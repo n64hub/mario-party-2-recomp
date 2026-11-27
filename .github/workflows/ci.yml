@@ -142,8 +142,10 @@ jobs:
             echo "attempt $i failed"
           done
           exit 1
+      # Through tools/ci/ninja.sh: a compile whose connect to that server failed with os error 10048 is run again.
       - name: Build runtime, renderer and frontend libraries
-        run: ninja -C build librecomp ultramodern rt64 recompui recompinput nfd
+        shell: bash
+        run: bash tools/ci/ninja.sh -C build librecomp ultramodern rt64 recompui recompinput nfd
       - name: Compile the game's own sources
         shell: bash
         run: |
@@ -151,7 +153,7 @@ jobs:
             grep -oE '^CMakeFiles/MarioParty2Recompiled\.dir/[^:]+\.obj' | grep -v register_overlays)
           [ -n "$objs" ] || { echo "no object targets found"; exit 1; }
           echo "$objs"
-          ninja -C build $objs
+          bash tools/ci/ninja.sh -C build $objs
       - name: sccache stats
         if: always() && steps.sccache.outcome == 'success'
         run: sccache --show-stats
@@ -222,6 +224,9 @@ jobs:
         with:
           path: ~/apt-archives
           key: ${{ steps.key.outputs.apt }}
+      # The cached .debs install with --auto-deconfigure: a cached package newer than the image's copy of one it Breaks
+      # (libasound2-data 1.2.11-1ubuntu0.5 over the image's libasound2t64 0.3) was otherwise refused, leaving the rest
+      # half-installed so the fallback apt-get install failed too, on every run that restored that cache.
       # A stalled mirror connection once held apt-get update silent until the job's 90 minutes ran out. Now apt drops a
       # connection silent for 30 s and retries the fetch, an update still stuck after 5 minutes is cut and run again, and
       # the step itself stops at 15.
@@ -229,7 +234,7 @@ jobs:
         timeout-minutes: 15
         run: |
           pkgs="clang lld libsdl2-dev libgtk-3-dev libfreetype-dev"
-          if ls ~/apt-archives/*.deb > /dev/null 2>&1 && sudo dpkg -i ~/apt-archives/*.deb > /dev/null &&
+          if ls ~/apt-archives/*.deb > /dev/null 2>&1 && sudo dpkg -i --auto-deconfigure ~/apt-archives/*.deb > /dev/null &&
               dpkg -s $pkgs > /dev/null; then exit 0; fi
           apt="apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30"
           for i in 1 2 3; do
