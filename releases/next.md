@@ -1,6 +1,0 @@
-**Fixed:**
-
-- In a wide window, the cards that slide in while a game is set up (the clouds for the number of players, the character banners, the skill levels, the Bonus choice) now slide all the way to the screen's edges. Before, they were cut off sharply at the 4:3 edges while the rails they hang from went on ([#97](https://github.com/n64hub/mario-party-2-recomp/issues/97)).
-- In a wide window, the opening's theater now fills the screen: its red curtains and pink borders reach the window's edges (up to 16:9), and the painted backdrop is widened to meet the curtains. Before, the stage stopped short of the edges, and the characters waiting to come on, or just gone off, showed in the black beside it ([#92](https://github.com/n64hub/mario-party-2-recomp/issues/92)).
-- The page no longer crashes when a board's game begins in a wide window. Each sprite drawn out to the window's edges takes a few more drawing commands, and at Western Land's start a frame ran past the room the game sets aside for them, overwriting its memory; each frame's commands now have room to spare.
-- Climbing the stairway up to Mini-Game Land, the brick arch overhead no longer flashes for a moment sharp and unfogged, nearer than it is, as the climb starts ([#95](https://github.com/n64hub/mario-party-2-recomp/issues/95)).
