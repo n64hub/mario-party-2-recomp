@@ -331,3 +331,29 @@ s32 widescreen_theater_wing(s32 x) {
     at.x *= theater_widened();
     return at.bits;
 }
+
+// Shy Guy Says' near clouds and the rainbow Shy Guy stands on (func_80105E50_249760_ShyGuySays: files 0x410028 and
+// 0x41002B, its left and right halves) are a flat picture in front of the players, built 1.26 wide, about as wide as
+// 4:3, and its bottom 4 pixels short of the screen's: a console's TV hid the strips beside and below it in its
+// overscan. Past it a wide window showed the far clouds to its sides, its edges a straight cut down them, and a strip of
+// the far rainbow below it. It is widened to a wide window's edges up to 2:1 (a 4K monitor's 1.9:1 window too), and a
+// little taller, its bottom past the screen's: clouds and a rainbow read the same wider. Past 2:1 it keeps that width,
+// black beside it, so it is stretched by no more than 1.6 times.
+#define CLOUDS_WIDEST 1.25f
+#define CLOUDS_MOST (2.0f / CLOUDS_WIDEST)
+#define CLOUDS_TALLER 1.07f
+
+// A half of the picture, from us.toml's hook as the game has made and placed it: it never writes its scale again.
+void widescreen_shy_guy_clouds(s16 model) {
+    f32 times = mp_aspect_ratio() / CLOUDS_WIDEST;
+
+    if (times < 1.0f) {
+        times = 1.0f;
+    }
+    if (times > CLOUDS_MOST) {
+        times = CLOUDS_MOST;
+        board_back_scene_widest(CLOUDS_WIDEST * times);
+    }
+    D_800FC834_FD434[model].scale.x = times;
+    D_800FC834_FD434[model].scale.y = CLOUDS_TALLER;
+}
