@@ -206,8 +206,10 @@ RECOMP_PATCH s32 DispCheck(Vec2f* corners) {
 // - 0x70, a board's results after each minigame: the board dimmed behind the table is a map of the screen's size
 //   (func_801042D8_410738_Results), which the engine judges 4:3 by its edges each frame; it is 4:3 by its overlay too,
 //   so nothing the HUD aligns to the window's edges is drawn over the black at its sides in any frame.
+// - 0x57, the boot's logos (Nintendo 64, Nintendo, Hudson): each a 2D picture of the screen's size on black, which a
+//   wide window stretched to its width.
 static const u8 overlays_4x3[] = { 0x05, 0x09, 0x0A, 0x0E, 0x11, 0x16, 0x17, 0x18, 0x19, 0x1B, 0x1E, 0x1F, 0x20,
-                                   0x21, 0x23, 0x24, 0x2C, 0x2E, 0x38, 0x39, 0x3A, 0x3C, 0x70 };
+                                   0x21, 0x23, 0x24, 0x2C, 0x2E, 0x38, 0x39, 0x3A, 0x3C, 0x57, 0x70 };
 
 // The minigames whose 3D ends short of a wide window's edges, and the widest each is drawn, its width over its height:
 // where its stage ends at its narrowest across the minigame's play, at a 32:9 window. The engine draws one to the
