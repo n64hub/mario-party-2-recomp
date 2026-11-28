@@ -1,6 +1,3 @@
 **Fixed:**
 
-- In Balloon Burst in a wide window, the pressure gauges stay where they belong, with their needles on them. Before, the platforms and gauges behind the players were stretched to the window's width while the needles stayed in the 4:3 middle ([#114](https://github.com/n64hub/mario-party-2-recomp/issues/114)).
-- In Filet Relay, a player's view no longer flashes when the fish is handed to the next penguin. On a display faster than the game's 30 frames a second, the frame drawn between two of the game's at each handoff showed the course swept from the old shot to the new one ([#100](https://github.com/n64hub/mario-party-2-recomp/issues/100)).
-- In a wide window, Shy Guy Says' near clouds and the rainbow Shy Guy stands on now reach the window's edges. Before, they stopped at 4:3 with a straight cut, and a thin strip of rainbow showed along the bottom ([#109](https://github.com/n64hub/mario-party-2-recomp/issues/109)).
 - In a wide window, the strip of clouds between Sky Pilots' two views now reaches the window's edges, with the teams' icons and the finish post placed along it. Before, it stopped at 4:3 with plain white bars on both sides ([#115](https://github.com/n64hub/mario-party-2-recomp/issues/115)).
