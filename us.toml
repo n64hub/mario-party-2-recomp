@@ -189,14 +189,6 @@ func = "func_80102B58_361A48_name_55"
 before_vram = 0x80102B58
 text = "{ void widescreen_parade(uint8_t*, recomp_context*); recomp_context saved = *ctx; widescreen_parade(rdram, ctx); *ctx = saved; }"
 
-# A board's characters and props hidden once off the screen (patches/widescreen.c, widescreen_board_shown): in
-# func_80043A60_44660, after func_800537F8_543F8 has written the one's place on the screen at sp + 0x10, before the test
-# loads its X. The game's registers are kept around the call.
-[[patches.hook]]
-func = "func_80043A60_44660"
-before_vram = 0x80043B2C
-text = "{ void widescreen_board_shown(uint8_t*, recomp_context*); recomp_context saved = *ctx; ctx->r4 = ctx->r29 + 0x10; widescreen_board_shown(rdram, ctx); *ctx = saved; }"
-
 # The opening's theater widened to a wide window's edges (patches/widescreen.c, widescreen_theater_stage): its set as
 # func_80105AB8_3D7FD8_TitleScreenAndIntro has made it, the model in v0, and each picture as
 # func_80104448_3D6968_TitleScreenAndIntro has made and placed it, the picture in s0, its x and y in the top halves of
