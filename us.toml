@@ -142,6 +142,14 @@ func = "DataRead"
 before_vram = 0x80017680
 text = "{ void mp_hud_hand_read(uint8_t*, int32_t); uint32_t file = (uint32_t)ctx->r4; int16_t p = MEM_H(0, (gpr)(int32_t)0x800F93C6); if (file >= 0x86 && file <= 0x8B && p >= 0 && p < 4 && MEM_BU(p * 0x34, (gpr)(int32_t)0x800FD2C4) == file - 0x86) mp_hud_hand_read(rdram, p); }"
 
+# A model the game reads mended before it is built (src/game/model_fixes.cpp: Crazy Cutters' drill, whose quad reached
+# past its frame of the picture, a thin dark line under each drill at a higher resolution). At DataRead's return, where
+# both ways out meet, with the file's number in its directory in s0 and what was decoded in v0 (0 if nothing).
+[[patches.hook]]
+func = "DataRead"
+before_vram = 0x800176D4
+text = "{ void mp2_data_read(uint8_t*, int32_t, gpr); mp2_data_read(rdram, (int32_t)(ctx->r16 & 0xFFFF), ctx->r2); }"
+
 [[patches.hook]]
 func = "SprAnimSet"
 before_vram = 0x8008218C
