@@ -156,8 +156,12 @@ before_vram = 0x8008218C
 text = "{ void mp_hud_hand_group(uint8_t*, gpr); mp_hud_hand_group(rdram, (gpr)(int32_t)MEM_W((int16_t)ctx->r4 * 4, (gpr)(int32_t)0x800FA1B0)); }"
 
 # A screen wipe past 4:3 (lib/mario-party-engine/src/wipe.cpp says how): the wipe module's whole-screen rectangle
-# (func_8008F7F4_903F4(gfx, alpha), out through 0x8008F8C0), and a shape wipe's rectangles around its square
-# (func_8009110C_91D0C, with gfx in t0, from 0x8009199C, where it has set their colour).
+# (func_8008F7F4_903F4(gfx, alpha), out through 0x8008F8C0), and its shape wipe, func_8009110C_91D0C(gfx, size,
+# alpha): its size, a float in a1, made larger as it starts for a picture wider than 4:3, and, with gfx in t0, its draws
+# (from 0x80091150, past its whole-screen rectangle for a closed shape, to its end at 0x80091B14) and its rectangles
+# around its square (from 0x8009199C, where it has set their colour, with the square's left and right edges in t1 and
+# t4). Its sides were drawn from 4:3's edges whatever the shape's size, so a shape opening past 4:3's corners left the
+# window's sides black (or the wipe's colour) until it ended, and the board was cut to 4:3 as one closed.
 [[patches.hook]]
 func = "func_8008F7F4_903F4"
 before_vram = 0x8008F7F4
@@ -170,8 +174,23 @@ text = "{ void mp_wipe_fill_end(uint8_t*, gpr); mp_wipe_fill_end(rdram, ctx->r4)
 
 [[patches.hook]]
 func = "func_8009110C_91D0C"
+before_vram = 0x8009110C
+text = "{ gpr mp_wipe_shape_scale(uint8_t*, gpr); ctx->r5 = mp_wipe_shape_scale(rdram, ctx->r5); }"
+
+[[patches.hook]]
+func = "func_8009110C_91D0C"
+before_vram = 0x80091150
+text = "{ void mp_wipe_shape_start(uint8_t*, gpr); mp_wipe_shape_start(rdram, ctx->r8); }"
+
+[[patches.hook]]
+func = "func_8009110C_91D0C"
 before_vram = 0x8009199C
-text = "{ void mp_wipe_sides(uint8_t*, gpr); mp_wipe_sides(rdram, ctx->r8); }"
+text = "{ void mp_wipe_square_sides(uint8_t*, gpr, gpr, gpr); mp_wipe_square_sides(rdram, ctx->r8, ctx->r9, ctx->r12); }"
+
+[[patches.hook]]
+func = "func_8009110C_91D0C"
+before_vram = 0x80091B14
+text = "{ void mp_wipe_shape_end(uint8_t*, gpr); mp_wipe_shape_end(rdram, ctx->r8); }"
 
 # The opening theater's spotlights past 4:3: func_80103BF0_3D6110_TitleScreenAndIntro(gfx, in s1) dims the stage round
 # the characters in the spotlight with a mask the CPU draws the spotlights into (255 where it is dimmed), in 32x32
