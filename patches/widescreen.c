@@ -214,7 +214,6 @@ RECOMP_PATCH s32 DispCheck(Vec2f* corners) {
 static const u8 overlays_4x3[] = { 0x05, 0x06, 0x09, 0x0A, 0x0E, 0x11, 0x16, 0x17, 0x18, 0x19, 0x1B, 0x1E, 0x1F,
                                    0x20, 0x21, 0x23, 0x24, 0x2C, 0x2E, 0x38, 0x39, 0x3A, 0x3C, 0x57, 0x70 };
 
-
 // The minigames whose 3D ends short of a wide window's edges, and the widest each is drawn, its width over its height:
 // where its stage ends at its narrowest across the minigame's play, at a 32:9 window. The engine draws one to the
 // window's edges up to that width and black past it (board_back_scene_widest), the camera's view stopping there, so a
