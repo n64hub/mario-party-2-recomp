@@ -86,6 +86,35 @@ func = "SprDisp"
 before_vram = 0x800858E8
 text = "{ void mp_hud_sprite_end(uint8_t*, gpr); mp_hud_sprite_end(rdram, ctx->r21); }"
 
+# A picture drawn in the game's own code, not through SprDisp (lib/mario-party-engine/src/hud.cpp,
+# mp_hud_picture_start): func_8007A7FC_7B3FC draws Balloon Burst's platforms and pumps, gauges and all, as rectangles
+# each covering the screen's whole width, through the display list's pointer at 0x800FDBCC, and returns at 0x8007AFD4.
+[[patches.hook]]
+func = "func_8007A7FC_7B3FC"
+before_vram = 0x8007A7FC
+text = "{ void mp_hud_picture_start(uint8_t*, gpr); mp_hud_picture_start(rdram, (gpr)(int32_t)0x800FDBCC); }"
+
+[[patches.hook]]
+func = "func_8007A7FC_7B3FC"
+before_vram = 0x8007AFD4
+text = "{ void mp_hud_picture_end(uint8_t*, gpr); mp_hud_picture_end(rdram, (gpr)(int32_t)0x800FDBCC); }"
+
+# Each frame's display list, with room for what the engine adds to it. func_8002F960_30560 sets aside one a frame (the
+# number of frames a byte at 0x800FDBCA), each of as many commands as its fourth argument (a u16 at 0x8010116E: 0x2004
+# at boot, 0x1000 on a board), from the game's heap, and puts their addresses at 0x800FD810, which the frame's start
+# reads into 0x800FDBCC, the display list's next command. Nothing checks its end: a frame past it writes over the heap's
+# next block, and the game stops at its next allocation. Each sprite in the 4:3 middle drawn out to the window's edges
+# (lib/mario-party-engine/src/hud.cpp) takes about ten commands more, and at Western Land's start, its board and its
+# panels, a frame went past the board's 0x1000. So each frame's list is in the upper 4 MB of the 8 the runtime gives
+# the game, which the game, made for 4 MB without the Expansion Pak, never uses (its heaps end at 0x802E0000): frame n's
+# at 0x80400000 + n * 0x80000, 0x10000 commands, eight times the most the game asks for. The game's own, left unused,
+# stays in its heap as before. It can't be in the runtime's heap, past 8 MB, where RT64 doesn't read a display list.
+# The hook is before the address is stored, with s1 the frame, s3 the commands and v0 the game's list.
+[[patches.hook]]
+func = "func_8002F960_30560"
+before_vram = 0x8002FA28
+text = "{ int frame = (int16_t)ctx->r17; if ((frame >= 0) && (frame < 8) && ((ctx->r19 & 0xFFFF) <= 0x2004) && (ctx->r2 != 0)) { ctx->r2 = (gpr)(int32_t)(0x80400000 + frame * 0x80000); } }"
+
 # The item a player uses carried out of their panel by their character's hand (hud.cpp, mp_hud_item_at and
 # mp_hud_hand_read). func_800629AC_635AC(player, x, y) moves the item, member 2 of the panel's group, whose place is
 # the floats at 0x48 of its sprite (SprPosSet's). Each board reads the hand's picture with DataRead(file), file 0x86
@@ -186,6 +215,19 @@ text = "{ void widescreen_theater_picture(uint8_t*, recomp_context*); recomp_con
 func = "func_80105AB8_3D7FD8_TitleScreenAndIntro"
 before_vram = 0x801096C8
 text = "{ void widescreen_theater_wing(uint8_t*, recomp_context*); recomp_context saved = *ctx; ctx->r4 = ctx->r5; widescreen_theater_wing(rdram, ctx); uint64_t x = ctx->r2; *ctx = saved; ctx->r5 = (int32_t)x; }"
+
+# Shy Guy Says' near clouds and rainbow widened to a wide window's edges (patches/widescreen.c,
+# widescreen_shy_guy_clouds): each half of the picture as func_80105E50_249760_ShyGuySays has made it and placed it
+# (func_80029714_2A314), the model in s3. The game's registers are kept around each call.
+[[patches.hook]]
+func = "func_80105E50_249760_ShyGuySays"
+before_vram = 0x80105F64
+text = "{ void widescreen_shy_guy_clouds(uint8_t*, recomp_context*); recomp_context saved = *ctx; ctx->r4 = (int16_t)ctx->r19; widescreen_shy_guy_clouds(rdram, ctx); *ctx = saved; }"
+
+[[patches.hook]]
+func = "func_80105E50_249760_ShyGuySays"
+before_vram = 0x80105FB8
+text = "{ void widescreen_shy_guy_clouds(uint8_t*, recomp_context*); recomp_context saved = *ctx; ctx->r4 = (int16_t)ctx->r19; widescreen_shy_guy_clouds(rdram, ctx); *ctx = saved; }"
 
 # Board Movement and Map Scrolling (lib/mario-party-engine/src/board_options.cpp), Original by default.
 # Fast board movement: func_80056E34_57A34(player, frames) takes a player to the next space in so many frames, 10 (a1)

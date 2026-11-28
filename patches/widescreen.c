@@ -65,6 +65,15 @@ _Static_assert(__builtin_offsetof(Camera, scissor) == 0x98, "Camera's scissor");
 _Static_assert(sizeof(Camera) == 0x2B8, "Camera's size");
 
 extern Camera* D_800C9B80_CA780;
+
+// How much wider than the game draws it the scene playing draws its 3D, about the screen's middle (widescreen_overlay):
+// Deep Sea Salvage's (overlay 0x3C) rocks, at both sides of its sea, are 3D that ends about 2 pixels short of 4:3's
+// edges, where a TV's overscan hid it, and the 2D sea behind them showed in strips 3 to 6 of a 1280x720 window's
+// pixels wide beside them, down the whole height of the rocks. 2% wider reaches 4:3's edges with a pixel to spare,
+// and what goes past them is under the black at its sides; the sea's 3D and the subs in it are drawn as much wider.
+#define DEEP_SEA_WIDER 1.02f
+static f32 scene_wider = 1.0f;
+
 void mp_model_camera(s32 camera, Mtx* view, Mtx* projection);
 // The frame being built, of FRAMES.
 extern s16 D_800FFFD6_100BD6;
@@ -86,7 +95,8 @@ RECOMP_PATCH void func_800204C0_210C0(s16 index, Gfx** gfx) {
     CameraMatrices* matrices = &camera->matrices[D_800FFFD6_100BD6];
     Vp* viewport = &camera->viewports[D_800FFFD6_100BD6];
 
-    viewport->vp.vscale[0] = (s16)camera->viewport_scale[0];
+    // @recomp The scene's 3D as much wider as it is drawn (scene_wider).
+    viewport->vp.vscale[0] = (s16)(camera->viewport_scale[0] * scene_wider);
     viewport->vp.vscale[1] = (s16)camera->viewport_scale[1];
     viewport->vp.vscale[2] = (s16)camera->viewport_scale[2];
     viewport->vp.vtrans[0] = (s16)camera->viewport_trans[0];
@@ -194,12 +204,16 @@ RECOMP_PATCH s32 DispCheck(Vec2f* corners) {
 //   top one not, its subs drawn past its sides into the black.
 // - 0x3C, Deep Sea Salvage: the sky, the sea and the reef far off are a 2D picture of the screen's size, and the sea
 //   the players swim in, tinted, and its rocks are 3D that ends at 4:3's edges. Stretched over a wide window, the
-//   picture's sea went on past them beside the water's tinted box.
+//   picture's sea went on past them beside the water's tinted box. The rocks end 2 pixels short of 4:3's edges too,
+//   and its 3D is drawn 2% wider to reach them (scene_wider).
 // - 0x70, a board's results after each minigame: the board dimmed behind the table is a map of the screen's size
 //   (func_801042D8_410738_Results), which the engine judges 4:3 by its edges each frame; it is 4:3 by its overlay too,
 //   so nothing the HUD aligns to the window's edges is drawn over the black at its sides in any frame.
+// - 0x57, the boot's logos (Nintendo 64, Nintendo, Hudson): each a 2D picture of the screen's size on black, which a
+//   wide window stretched to its width.
 static const u8 overlays_4x3[] = { 0x05, 0x06, 0x09, 0x0A, 0x0E, 0x11, 0x16, 0x17, 0x18, 0x19, 0x1B, 0x1E, 0x1F,
-                                   0x20, 0x21, 0x23, 0x24, 0x2C, 0x2E, 0x38, 0x39, 0x3A, 0x3C, 0x70 };
+                                   0x20, 0x21, 0x23, 0x24, 0x2C, 0x2E, 0x38, 0x39, 0x3A, 0x3C, 0x57, 0x70 };
+
 
 // The minigames whose 3D ends short of a wide window's edges, and the widest each is drawn, its width over its height:
 // where its stage ends at its narrowest across the minigame's play, at a 32:9 window. The engine draws one to the
@@ -236,6 +250,7 @@ void widescreen_overlay(s32 overlay) {
         }
     }
     board_back_scene_widest(widest);
+    scene_wider = (overlay == 0x3C) ? DEEP_SEA_WIDER : 1.0f;
 }
 
 // The seas of short_scenes that are widened in x so that they reach a wide window's edges (lib/mario-party-engine's
@@ -319,4 +334,30 @@ s32 widescreen_theater_wing(s32 x) {
     at.bits = x;
     at.x *= theater_widened();
     return at.bits;
+}
+
+// Shy Guy Says' near clouds and the rainbow Shy Guy stands on (func_80105E50_249760_ShyGuySays: files 0x410028 and
+// 0x41002B, its left and right halves) are a flat picture in front of the players, built 1.26 wide, about as wide as
+// 4:3, and its bottom 4 pixels short of the screen's: a console's TV hid the strips beside and below it in its
+// overscan. Past it a wide window showed the far clouds to its sides, its edges a straight cut down them, and a strip of
+// the far rainbow below it. It is widened to a wide window's edges up to 2:1 (a 4K monitor's 1.9:1 window too), and a
+// little taller, its bottom past the screen's: clouds and a rainbow read the same wider. Past 2:1 it keeps that width,
+// black beside it, so it is stretched by no more than 1.6 times.
+#define CLOUDS_WIDEST 1.25f
+#define CLOUDS_MOST (2.0f / CLOUDS_WIDEST)
+#define CLOUDS_TALLER 1.07f
+
+// A half of the picture, from us.toml's hook as the game has made and placed it: it never writes its scale again.
+void widescreen_shy_guy_clouds(s16 model) {
+    f32 times = mp_aspect_ratio() / CLOUDS_WIDEST;
+
+    if (times < 1.0f) {
+        times = 1.0f;
+    }
+    if (times > CLOUDS_MOST) {
+        times = CLOUDS_MOST;
+        board_back_scene_widest(CLOUDS_WIDEST * times);
+    }
+    D_800FC834_FD434[model].scale.x = times;
+    D_800FC834_FD434[model].scale.y = CLOUDS_TALLER;
 }
