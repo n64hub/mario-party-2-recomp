@@ -86,6 +86,16 @@ func = "SprDisp"
 before_vram = 0x800858E8
 text = "{ void mp_hud_sprite_end(uint8_t*, gpr); mp_hud_sprite_end(rdram, ctx->r21); }"
 
+# Sky Pilots' strip of clouds between its two views, over the window (lib/mario-party-engine/src/hud.cpp says how,
+# mp_hud_bar_float): func_80107EAC_1B153C_SkyPilots makes it, ten basic sprites (0x24 bytes each, their table's address
+# at 0x800F93FC) of one picture at y 0x78, from x 8 to 296, each one's index in turn in s0, and after them its finish
+# post (y 0x71) and its teams' icons (y 0x70 and 0x74) over it. The hook is just after the tiles' loop, with the last
+# tile's index in s0. The post and the icons are on the screen's rows 0x68 up to 0x80, between the views' HUDs.
+[[patches.hook]]
+func = "func_80107EAC_1B153C_SkyPilots"
+before_vram = 0x801082A4
+text = "{ void mp_hud_bar_float(uint8_t*, int32_t, gpr, gpr, int32_t, int32_t, int32_t); mp_hud_bar_float(rdram, (int16_t)ctx->r16, (gpr)(int32_t)MEM_W(0, (gpr)(int32_t)0x800F93FC), (gpr)(int32_t)0x800FA1B0, 0xC, 0x68, 0x80); }"
+
 # A picture drawn in the game's own code, not through SprDisp (lib/mario-party-engine/src/hud.cpp,
 # mp_hud_picture_start): func_8007A7FC_7B3FC draws Balloon Burst's platforms and pumps, gauges and all, as rectangles
 # each covering the screen's whole width, through the display list's pointer at 0x800FDBCC, and returns at 0x8007AFD4.
