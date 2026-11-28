@@ -163,6 +163,9 @@ RECOMP_PATCH s32 DispCheck(Vec2f* corners) {
 // frame (us.toml's hook at func_800286FC_292FC's gDPFullSync), and the camera's view and the HUD stay inside 4:3.
 // - 0x05, Give Me a Brake (Western Land's item minigame): its desert, the cacti and fence with it, is a picture of the
 //   screen's size, and the frame's white clear showed past it.
+// - 0x06, the item minigame of block stacks in a ring, knocked down with a mallet (the decomp's MalletGoRound; Hammer
+//   Slammer by its players' name): the ruins around the ring end at 4:3's edges, and Baby Bowser, who leaps off their
+//   top left corner as an item is won, stood on in the black past it.
 // - 0x09, Bumper Balloon Cars: its arena, the sand and the fence and stands around it, is a 2D picture of the screen's
 //   size, and the cars that drive on the sand are 3D, kept to it as it is at 4:3. Stretched over a wide window, the
 //   sand went on far past where the cars turn back.
@@ -208,8 +211,8 @@ RECOMP_PATCH s32 DispCheck(Vec2f* corners) {
 //   so nothing the HUD aligns to the window's edges is drawn over the black at its sides in any frame.
 // - 0x57, the boot's logos (Nintendo 64, Nintendo, Hudson): each a 2D picture of the screen's size on black, which a
 //   wide window stretched to its width.
-static const u8 overlays_4x3[] = { 0x05, 0x09, 0x0A, 0x0E, 0x11, 0x16, 0x17, 0x18, 0x19, 0x1B, 0x1E, 0x1F, 0x20,
-                                   0x21, 0x23, 0x24, 0x2C, 0x2E, 0x38, 0x39, 0x3A, 0x3C, 0x57, 0x70 };
+static const u8 overlays_4x3[] = { 0x05, 0x06, 0x09, 0x0A, 0x0E, 0x11, 0x16, 0x17, 0x18, 0x19, 0x1B, 0x1E, 0x1F,
+                                   0x20, 0x21, 0x23, 0x24, 0x2C, 0x2E, 0x38, 0x39, 0x3A, 0x3C, 0x57, 0x70 };
 
 // The minigames whose 3D ends short of a wide window's edges, and the widest each is drawn, its width over its height:
 // where its stage ends at its narrowest across the minigame's play, at a 32:9 window. The engine draws one to the
@@ -330,4 +333,30 @@ s32 widescreen_theater_wing(s32 x) {
     at.bits = x;
     at.x *= theater_widened();
     return at.bits;
+}
+
+// Shy Guy Says' near clouds and the rainbow Shy Guy stands on (func_80105E50_249760_ShyGuySays: files 0x410028 and
+// 0x41002B, its left and right halves) are a flat picture in front of the players, built 1.26 wide, about as wide as
+// 4:3, and its bottom 4 pixels short of the screen's: a console's TV hid the strips beside and below it in its
+// overscan. Past it a wide window showed the far clouds to its sides, its edges a straight cut down them, and a strip of
+// the far rainbow below it. It is widened to a wide window's edges up to 2:1 (a 4K monitor's 1.9:1 window too), and a
+// little taller, its bottom past the screen's: clouds and a rainbow read the same wider. Past 2:1 it keeps that width,
+// black beside it, so it is stretched by no more than 1.6 times.
+#define CLOUDS_WIDEST 1.25f
+#define CLOUDS_MOST (2.0f / CLOUDS_WIDEST)
+#define CLOUDS_TALLER 1.07f
+
+// A half of the picture, from us.toml's hook as the game has made and placed it: it never writes its scale again.
+void widescreen_shy_guy_clouds(s16 model) {
+    f32 times = mp_aspect_ratio() / CLOUDS_WIDEST;
+
+    if (times < 1.0f) {
+        times = 1.0f;
+    }
+    if (times > CLOUDS_MOST) {
+        times = CLOUDS_MOST;
+        board_back_scene_widest(CLOUDS_WIDEST * times);
+    }
+    D_800FC834_FD434[model].scale.x = times;
+    D_800FC834_FD434[model].scale.y = CLOUDS_TALLER;
 }

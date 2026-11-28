@@ -235,6 +235,19 @@ func = "func_80105AB8_3D7FD8_TitleScreenAndIntro"
 before_vram = 0x801096C8
 text = "{ void widescreen_theater_wing(uint8_t*, recomp_context*); recomp_context saved = *ctx; ctx->r4 = ctx->r5; widescreen_theater_wing(rdram, ctx); uint64_t x = ctx->r2; *ctx = saved; ctx->r5 = (int32_t)x; }"
 
+# Shy Guy Says' near clouds and rainbow widened to a wide window's edges (patches/widescreen.c,
+# widescreen_shy_guy_clouds): each half of the picture as func_80105E50_249760_ShyGuySays has made it and placed it
+# (func_80029714_2A314), the model in s3. The game's registers are kept around each call.
+[[patches.hook]]
+func = "func_80105E50_249760_ShyGuySays"
+before_vram = 0x80105F64
+text = "{ void widescreen_shy_guy_clouds(uint8_t*, recomp_context*); recomp_context saved = *ctx; ctx->r4 = (int16_t)ctx->r19; widescreen_shy_guy_clouds(rdram, ctx); *ctx = saved; }"
+
+[[patches.hook]]
+func = "func_80105E50_249760_ShyGuySays"
+before_vram = 0x80105FB8
+text = "{ void widescreen_shy_guy_clouds(uint8_t*, recomp_context*); recomp_context saved = *ctx; ctx->r4 = (int16_t)ctx->r19; widescreen_shy_guy_clouds(rdram, ctx); *ctx = saved; }"
+
 # Board Movement and Map Scrolling (lib/mario-party-engine/src/board_options.cpp), Original by default.
 # Fast board movement: func_80056E34_57A34(player, frames) takes a player to the next space in so many frames, 10 (a1)
 # for a walk from func_800650F0_65CF0 and board 0x4C's func_801034C8_326888_name_4C (15 is a jump): 5.
